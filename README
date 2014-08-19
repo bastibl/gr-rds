@@ -3,6 +3,9 @@
 GNU Radio v3.7.
 libxml2 (sudo apt-get install libxml2)
 
+On Kali Linux 1.07
+libboost-all-dev (sudo apt-get install libboost-all-dev)
+
 
 ### Installation
 
