@@ -139,7 +139,6 @@ void encoder_impl::rds_in(pmt::pmt_t msg) {
 	cout << "input string: " << in << "   length: " << in.size() << endl;
 
 	unsigned int ui1;
-	int i1;
 	std::string s1;
 	bool b1;
 	double d1;
