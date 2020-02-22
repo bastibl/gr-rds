@@ -72,7 +72,7 @@ void parser_impl::reset() {
  * type 1 = PS
  * type 2 = PTY
  * type 3 = flagstring: TP, TA, MuSp, MoSt, AH, CMP, stPTY
- * type 4 = RadioText 
+ * type 4 = RadioText
  * type 5 = ClockTime
  * type 6 = Alternative Frequencies */
 void parser_impl::send_message(long msgtype, std::string msgtext) {
@@ -89,7 +89,7 @@ void parser_impl::decode_type0(unsigned int *group, bool B) {
 	double af_1            = 0;
 	double af_2            = 0;
 	char flagstring[8]     = "0000000";
-	
+
 	traffic_program        = (group[1] >> 10) & 0x01;       // "TP"
 	traffic_announcement   = (group[1] >>  4) & 0x01;       // "TA"
 	music_speech           = (group[1] >>  3) & 0x01;       // "MuSp"
@@ -298,7 +298,7 @@ void parser_impl::decode_type3(unsigned int *group, bool B){
 	int group_type        =  group[1] & 0x1;
 	int message           =  group[2];
 	int aid               =  group[3];
-	
+
 	lout << "aid group: " << application_group
 		<< " " << (group_type ? 'B' : 'A');
 	if((application_group == 8) && (group_type == false)) { // 8A
@@ -434,7 +434,7 @@ void parser_impl::decode_optional_content(int no_groups, unsigned long int *free
 	int content        = 0;
 	int content_length = 0;
 	int ff_pointer     = 0;
-	
+
 	for (int i = no_groups; i == 0; i--){
 		ff_pointer = 12 + 16;
 		while(ff_pointer > 0){
@@ -470,18 +470,18 @@ void parser_impl::decode_type13(unsigned int *group, bool B){
 }
 
 void parser_impl::decode_type14(unsigned int *group, bool B){
-	
+
 	bool tp_on               = (group[1] >> 4) & 0x01;
 	char variant_code        = group[1] & 0x0f;
 	unsigned int information = group[2];
 	unsigned int pi_on       = group[3];
-	
+
 	char pty_on = 0;
 	bool ta_on = 0;
 	static char ps_on[8] = {' ',' ',' ',' ',' ',' ',' ',' '};
 	double af_1 = 0;
 	double af_2 = 0;
-	
+
 	if (!B){
 		switch (variant_code){
 			case 0: // PS(ON)
@@ -659,4 +659,3 @@ void parser_impl::parse(pmt::pmt_t pdu) {
 	}
 	dout << std::endl;
 }
-

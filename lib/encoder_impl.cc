@@ -514,4 +514,3 @@ encoder::sptr encoder::make (unsigned char pty_locale, int pty, bool ms,
 					pi_country_code, pi_coverage_area, pi_reference_number,
 					radiotext));
 }
-

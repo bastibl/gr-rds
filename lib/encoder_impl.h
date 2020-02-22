@@ -107,5 +107,3 @@ private:
 } /* namespace gr */
 
 #endif /* INCLUDED_RDS_ENCODER_IMPL_H */
-
-

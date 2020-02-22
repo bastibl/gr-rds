@@ -139,7 +139,7 @@ int decoder_impl::work (int noutput_items,
 						}
 						else {
 							bit_distance=bit_counter-lastseen_offset_counter;
-							if (offset_pos[lastseen_offset]>=offset_pos[j]) 
+							if (offset_pos[lastseen_offset]>=offset_pos[j])
 								block_distance=offset_pos[j]+4-offset_pos[lastseen_offset];
 							else
 								block_distance=offset_pos[j]-offset_pos[lastseen_offset];
