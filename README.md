@@ -10,7 +10,7 @@ GNU Radio master, which tracks the development towards GNU Radio 3.9.
 ### Dependencies
 
 - GNU Radio. See the [GNU Radio
-  Wiki](http://wiki.gnuradio.org/index.php/InstallingGR) for
+  Wiki](https://wiki.gnuradio.org/index.php/InstallingGR) for
   installation instructions.
 
 
