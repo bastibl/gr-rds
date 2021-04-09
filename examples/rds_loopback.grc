@@ -1,6 +1,7 @@
 options:
   parameters:
     author: ''
+    catch_exceptions: 'True'
     category: Custom
     cmake_opt: ''
     comment: ''
@@ -22,8 +23,10 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: ''
-    window_size: 1500, 1500
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [10, 10]
     rotation: 0
     state: enabled
@@ -35,6 +38,9 @@ blocks:
     comment: ''
     value: '5'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1168, 499]
     rotation: 0
     state: enabled
@@ -44,6 +50,9 @@ blocks:
     comment: ''
     value: baseband_rate/audio_decim
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1144, 220]
     rotation: 0
     state: enabled
@@ -53,6 +62,9 @@ blocks:
     comment: ''
     value: '48000'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1176, 427]
     rotation: 0
     state: enabled
@@ -62,6 +74,9 @@ blocks:
     comment: ''
     value: samp_rate/bb_decim
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1160, 571]
     rotation: 0
     state: enabled
@@ -71,6 +86,9 @@ blocks:
     comment: ''
     value: '4'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1080, 283]
     rotation: 0
     state: enabled
@@ -80,6 +98,9 @@ blocks:
     comment: ''
     value: 80e3
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1040, 355]
     rotation: 0
     state: enabled
@@ -90,7 +111,7 @@ blocks:
     gui_hint: ''
     label: ''
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: 88.0e6
     step: 0.1e6
@@ -98,6 +119,9 @@ blocks:
     value: 97e6
     widget: counter_slider
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1136, 16]
     rotation: 0
     state: enabled
@@ -108,7 +132,7 @@ blocks:
     gui_hint: ''
     label: ''
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '0.1'
@@ -116,6 +140,9 @@ blocks:
     value: '1'
     widget: counter_slider
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [752, 16]
     rotation: 0
     state: enabled
@@ -125,6 +152,9 @@ blocks:
     comment: ''
     value: '0'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1184, 156]
     rotation: 0
     state: enabled
@@ -135,7 +165,7 @@ blocks:
     gui_hint: ''
     label: ''
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '0.01'
@@ -143,6 +173,9 @@ blocks:
     value: '0.02'
     widget: counter_slider
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [872, 16]
     rotation: 0
     state: enabled
@@ -152,6 +185,9 @@ blocks:
     comment: ''
     value: '1000000'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1176, 283]
     rotation: 0
     state: enabled
@@ -162,7 +198,7 @@ blocks:
     gui_hint: ''
     label: ''
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '0.01'
@@ -170,6 +206,9 @@ blocks:
     value: '0.3'
     widget: counter_slider
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1000, 16]
     rotation: 0
     state: enabled
@@ -179,6 +218,9 @@ blocks:
     comment: ''
     value: 19e3*20
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1096, 156]
     rotation: 0
     state: enabled
@@ -188,6 +230,9 @@ blocks:
     comment: ''
     value: '100000'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1152, 355]
     rotation: 0
     state: enabled
@@ -202,6 +247,9 @@ blocks:
     minoutbuf: '0'
     quad_rate: samp_rate
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [72, 772]
     rotation: 0
     state: enabled
@@ -217,6 +265,9 @@ blocks:
     type: byte
     vlen: '1'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1088, 796]
     rotation: 0
     state: enabled
@@ -232,6 +283,9 @@ blocks:
     type: float
     vlen: '1'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [980, 504]
     rotation: 270
     state: enabled
@@ -247,6 +301,9 @@ blocks:
     type: float
     vlen: '1'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [256, 428]
     rotation: 0
     state: enabled
@@ -264,6 +321,9 @@ blocks:
     tcp_no_delay: 'False'
     type: TCP_SERVER
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [48, 124.0]
     rotation: 0
     state: enabled
@@ -280,6 +340,9 @@ blocks:
     type: complex
     vlen: '1'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [416, 628]
     rotation: 180
     state: enabled
@@ -293,6 +356,9 @@ blocks:
     minoutbuf: '0'
     modulus: '2'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1228.0, 920]
     rotation: 270
     state: enabled
@@ -315,6 +381,9 @@ blocks:
     timing_bw: 6.28/100.0
     verbose: 'False'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [784, 748]
     rotation: 0
     state: enabled
@@ -332,6 +401,9 @@ blocks:
     taps: firdes.low_pass(1, samp_rate, xlate_bandwidth, 100000)
     type: ccc
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [160, 592]
     rotation: 180
     state: enabled
@@ -346,9 +418,12 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     samp_rate: baseband_rate
-    taps: firdes.low_pass(2500.0,baseband_rate,2.4e3,2e3,firdes.WIN_HAMMING)
+    taps: firdes.low_pass(2500.0,baseband_rate,2.4e3,2e3)
     type: fcc
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [272, 776]
     rotation: 0
     state: enabled
@@ -363,6 +438,9 @@ blocks:
     scale: '1'
     vlen: '1'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [80, 428]
     rotation: 0
     state: enabled
@@ -376,6 +454,9 @@ blocks:
     minoutbuf: '0'
     modulus: '2'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [496, 148]
     rotation: 0
     state: enabled
@@ -389,6 +470,9 @@ blocks:
     minoutbuf: '0'
     sensitivity: 2*math.pi*fm_max_dev/usrp_rate
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [808, 628]
     rotation: 180
     state: enabled
@@ -402,6 +486,9 @@ blocks:
     maxoutbuf: outbuffer
     minoutbuf: '0'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [152, 300]
     rotation: 180
     state: enabled
@@ -415,6 +502,9 @@ blocks:
     maxoutbuf: outbuffer
     minoutbuf: '0'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [448, 300]
     rotation: 180
     state: enabled
@@ -430,6 +520,9 @@ blocks:
     type: float
     vlen: '1'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [888, 400]
     rotation: 0
     state: enabled
@@ -444,10 +537,14 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     offset: '0'
+    phase: '0'
     samp_rate: usrp_rate
     type: float
     waveform: analog.GR_SIN_WAVE
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [704, 304]
     rotation: 0
     state: enabled
@@ -461,6 +558,9 @@ blocks:
     maxoutbuf: outbuffer
     minoutbuf: '0'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [288, 300]
     rotation: 180
     state: enabled
@@ -471,6 +571,9 @@ blocks:
     comment: ''
     imports: import math
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1080, 427]
     rotation: 0
     state: enabled
@@ -492,6 +595,9 @@ blocks:
     width: .5e3
     win: firdes.WIN_HAMMING
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [504, 384]
     rotation: 0
     state: enabled
@@ -547,6 +653,7 @@ blocks:
     minoutbuf: '0'
     name: '""'
     nconnections: '1'
+    norm_window: 'False'
     showports: 'True'
     tr_chan: '0'
     tr_level: '0.0'
@@ -565,10 +672,13 @@ blocks:
     width7: '1'
     width8: '1'
     width9: '1'
-    wintype: firdes.WIN_BLACKMAN_hARRIS
+    wintype: window.WIN_BLACKMAN_hARRIS
     ymax: '10'
     ymin: '-140'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [536, 988]
     rotation: 0
     state: enabled
@@ -589,16 +699,16 @@ blocks:
     alpha9: '1.0'
     autoscale: 'False'
     axislabels: 'True'
-    color1: '"blue"'
-    color10: '"blue"'
-    color2: '"red"'
-    color3: '"green"'
-    color4: '"black"'
-    color5: '"cyan"'
-    color6: '"magenta"'
-    color7: '"yellow"'
-    color8: '"dark red"'
-    color9: '"dark green"'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
     comment: ''
     ctrlpanel: 'False'
     entags: 'True'
@@ -663,6 +773,9 @@ blocks:
     ymin: '-1'
     yunit: '""'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [536, 900]
     rotation: 0
     state: enabled
@@ -719,8 +832,11 @@ blocks:
     showports: 'True'
     type: float
     update_time: '0.10'
-    wintype: firdes.WIN_BLACKMAN_hARRIS
+    wintype: window.WIN_BLACKMAN_hARRIS
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [272, 876]
     rotation: 0
     state: enabled
@@ -738,6 +854,9 @@ blocks:
     taps: ''
     type: ccc
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [576, 608]
     rotation: 180
     state: enabled
@@ -752,6 +871,9 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [1072, 1084.0]
     rotation: 180
     state: true
@@ -775,6 +897,9 @@ blocks:
     ta: 'False'
     tp: 'True'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [224, 68.0]
     rotation: 0
     state: true
@@ -787,6 +912,9 @@ blocks:
     freq: '0'
     gui_hint: ''
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [760, 1096.0]
     rotation: 180
     state: true
@@ -803,6 +931,9 @@ blocks:
     pty_locale: '0'
     reset: '0'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [904, 1076.0]
     rotation: 180
     state: true
@@ -823,6 +954,9 @@ blocks:
     sym_rate: '2375'
     type: fir_filter_ccf
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [536, 760]
     rotation: 0
     state: enabled
@@ -854,6 +988,9 @@ blocks:
     label9: Tab 9
     num_tabs: '3'
   states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
     coordinate: [608, 16]
     rotation: 0
     state: enabled

@@ -123,6 +123,7 @@ endif(APPLE)
 ########################################################################
 # Find gnuradio build dependencies
 ########################################################################
+find_package(pybind11 REQUIRED)
 
 ########################################################################
 # Create uninstall target
@@ -142,6 +143,5 @@ add_custom_target(uninstall
 ########################################################################
 add_subdirectory(include/rds)
 add_subdirectory(lib)
-add_subdirectory(swig)
 add_subdirectory(python)
 add_subdirectory(grc)

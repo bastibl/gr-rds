@@ -26,7 +26,7 @@ namespace rds {
 class RDS_API decoder : virtual public gr::sync_block
 {
 public:
-	typedef boost::shared_ptr<decoder> sptr;
+	typedef std::shared_ptr<decoder> sptr;
 	static sptr make(bool log, bool debug);
 };
 
