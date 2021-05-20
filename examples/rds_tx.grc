@@ -48,24 +48,6 @@ blocks:
     rotation: 0
     state: enabled
 - name: input_gain
-  id: variable_slider
-  parameters:
-    alias: ''
-    comment: ''
-    converver: float_converter
-    grid_pos: ''
-    label: ''
-    max: '10'
-    min: '0'
-    notebook: ''
-    num_steps: '100'
-    style: wx.SL_HORIZONTAL
-    value: '.3'
-  states:
-    coordinate: [1440, 16]
-    rotation: 0
-    state: enabled
-- name: input_gain
   id: variable
   parameters:
     comment: ''
@@ -81,24 +63,6 @@ blocks:
     value: '10'
   states:
     coordinate: [1080, 12]
-    rotation: 0
-    state: enabled
-- name: pilot_gain
-  id: variable_slider
-  parameters:
-    alias: ''
-    comment: ''
-    converver: float_converter
-    grid_pos: ''
-    label: ''
-    max: '3'
-    min: '0'
-    notebook: ''
-    num_steps: '100'
-    style: wx.SL_HORIZONTAL
-    value: '.09'
-  states:
-    coordinate: [1440, 328]
     rotation: 0
     state: enabled
 - name: pilot_gain
@@ -126,48 +90,12 @@ blocks:
     rotation: 0
     state: enabled
 - name: rds_gain
-  id: variable_slider
-  parameters:
-    alias: ''
-    comment: ''
-    converver: float_converter
-    grid_pos: ''
-    label: ''
-    max: '3'
-    min: '0'
-    notebook: ''
-    num_steps: '100'
-    style: wx.SL_HORIZONTAL
-    value: '.27'
-  states:
-    coordinate: [1440, 224]
-    rotation: 0
-    state: enabled
-- name: rds_gain
   id: variable
   parameters:
     comment: ''
     value: '0.3'
   states:
     coordinate: [952, 100]
-    rotation: 0
-    state: enabled
-- name: stereo_gain
-  id: variable_slider
-  parameters:
-    alias: ''
-    comment: ''
-    converver: float_converter
-    grid_pos: ''
-    label: ''
-    max: '3'
-    min: '0'
-    notebook: ''
-    num_steps: '100'
-    style: wx.SL_HORIZONTAL
-    value: '.3'
-  states:
-    coordinate: [1440, 120]
     rotation: 0
     state: enabled
 - name: usrp_rate
