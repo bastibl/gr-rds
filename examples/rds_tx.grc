@@ -74,21 +74,6 @@ blocks:
     coordinate: [1144, 100]
     rotation: 0
     state: enabled
-- name: ps
-  id: variable_text_box
-  parameters:
-    alias: ''
-    comment: ''
-    converver: str_converter
-    formatter: None
-    grid_pos: ''
-    label: PS
-    notebook: ''
-    value: '"WDR 3"'
-  states:
-    coordinate: [1440, 430]
-    rotation: 0
-    state: enabled
 - name: rds_gain
   id: variable
   parameters:
