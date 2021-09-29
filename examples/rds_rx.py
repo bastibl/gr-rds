@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: Stereo FM receiver and RDS Decoder
-# GNU Radio version: v3.9.0.0-145-g68418b4d
+# GNU Radio version: 3.9.3.0-rc1
 
 from distutils.version import StrictVersion
 
@@ -25,6 +25,7 @@ from gnuradio import qtgui
 from gnuradio.filter import firdes
 import sip
 from gnuradio import analog
+import math
 from gnuradio import audio
 from gnuradio import blocks
 from gnuradio import digital
@@ -36,10 +37,8 @@ import signal
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
-from gnuradio.filter import pfb
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
-import math
 import osmosdr
 import time
 import rds
@@ -84,17 +83,21 @@ class rds_rx(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
+        self.rrc_taps = rrc_taps = firdes.root_raised_cosine(1.0, 19000,19000/8, 1.0, 151)
         self.freq_offset = freq_offset = 250000
         self.freq = freq = 88.5
-        self.volume = volume = 0
+        self.volume = volume = -6
         self.samp_rate = samp_rate = 2000000
+        self.rrc_taps_manchester = rrc_taps_manchester = [rrc_taps[n] - rrc_taps[n+8] for n in range(len(rrc_taps)-8)]
+        self.pilot_taps = pilot_taps = firdes.complex_band_pass(1.0, 240000, 18980, 19020, 1000, window.WIN_HAMMING, 6.76)
         self.gain = gain = 25
         self.freq_tune = freq_tune = freq*1e6 - freq_offset
+        self.decimation = decimation = 8
 
         ##################################################
         # Blocks
         ##################################################
-        self._volume_range = Range(-20, 10, 1, 0, 200)
+        self._volume_range = Range(-20, 10, 1, -6, 200)
         self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Volume', "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._volume_win, 1, 0, 1, 1)
         for r in range(1, 2):
@@ -125,29 +128,31 @@ class rds_rx(gr.top_block, Qt.QWidget):
         self.rtlsdr_source_0_0.set_dc_offset_mode(0, 0)
         self.rtlsdr_source_0_0.set_iq_balance_mode(0, 0)
         self.rtlsdr_source_0_0.set_gain_mode(False, 0)
-        self.rtlsdr_source_0_0.set_gain(14, 0)
-        self.rtlsdr_source_0_0.set_if_gain(24, 0)
-        self.rtlsdr_source_0_0.set_bb_gain(gain, 0)
+        self.rtlsdr_source_0_0.set_gain(gain, 0)
+        self.rtlsdr_source_0_0.set_if_gain(20, 0)
+        self.rtlsdr_source_0_0.set_bb_gain(20, 0)
         self.rtlsdr_source_0_0.set_antenna('', 0)
         self.rtlsdr_source_0_0.set_bandwidth(0, 0)
-        self.root_raised_cosine_filter_0 = filter.fir_filter_ccf(
-            2,
-            firdes.root_raised_cosine(
-                1,
-                19000,
-                2375,
-                1,
-                100))
         self.rds_parser_0 = rds.parser(False, False, 0)
         self.rds_panel_0 = rds.rdsPanel(freq)
         self._rds_panel_0_win = self.rds_panel_0
         self.top_layout.addWidget(self._rds_panel_0_win)
         self.rds_decoder_0 = rds.decoder(False, False)
+        self.rational_resampler_xxx_1 = filter.rational_resampler_ccc(
+                interpolation=19000,
+                decimation=samp_rate // decimation // 10,
+                taps=[],
+                fractional_bw=0)
+        self.rational_resampler_xxx_0 = filter.rational_resampler_fff(
+                interpolation=240000,
+                decimation=samp_rate // decimation,
+                taps=[],
+                fractional_bw=0)
         self.qtgui_waterfall_sink_x_0 = qtgui.waterfall_sink_f(
             1024, #size
             window.WIN_BLACKMAN_hARRIS, #wintype
             0, #fc
-            samp_rate, #bw
+            samp_rate / decimation, #bw
             "", #name
             1, #number of inputs
             None # parent
@@ -157,7 +162,7 @@ class rds_rx(gr.top_block, Qt.QWidget):
         self.qtgui_waterfall_sink_x_0.enable_axis_labels(True)
 
 
-        self.qtgui_waterfall_sink_x_0.set_plot_pos_half(not True)
+        self.qtgui_waterfall_sink_x_0.set_plot_pos_half(not False)
 
         labels = ['', '', '', '', '',
                   '', '', '', '', '']
@@ -174,15 +179,16 @@ class rds_rx(gr.top_block, Qt.QWidget):
             self.qtgui_waterfall_sink_x_0.set_color_map(i, colors[i])
             self.qtgui_waterfall_sink_x_0.set_line_alpha(i, alphas[i])
 
-        self.qtgui_waterfall_sink_x_0.set_intensity_range(-140, 10)
+        self.qtgui_waterfall_sink_x_0.set_intensity_range(-80, 0)
 
-        self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.pyqwidget(), Qt.QWidget)
+        self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.qwidget(), Qt.QWidget)
+
         self.top_layout.addWidget(self._qtgui_waterfall_sink_x_0_win)
         self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
             1024, #size
             window.WIN_BLACKMAN_hARRIS, #wintype
             0, #fc
-            samp_rate, #bw
+            samp_rate / decimation, #bw
             "", #name
             1,
             None # parent
@@ -218,47 +224,47 @@ class rds_rx(gr.top_block, Qt.QWidget):
             self.qtgui_freq_sink_x_0.set_line_color(i, colors[i])
             self.qtgui_freq_sink_x_0.set_line_alpha(i, alphas[i])
 
-        self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.pyqwidget(), Qt.QWidget)
+        self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_freq_sink_x_0_win)
-        self.pfb_arb_resampler_xxx_1 = pfb.arb_resampler_fff(
-            240000.0/250000,
-            taps=None,
-            flt_size=32)
-        self.pfb_arb_resampler_xxx_1.declare_sample_delay(0)
-        self.pfb_arb_resampler_xxx_0 = pfb.arb_resampler_ccf(
-            19000/250e3,
-            taps=None,
-            flt_size=32)
-        self.pfb_arb_resampler_xxx_0.declare_sample_delay(0)
-        self.freq_xlating_fir_filter_xxx_2 = filter.freq_xlating_fir_filter_fcf(5, firdes.low_pass(1.0,240000,13e3,3e3), 38000, 240000)
-        self.freq_xlating_fir_filter_xxx_1_0 = filter.freq_xlating_fir_filter_fcc(1, firdes.low_pass(2500.0,250000,2.6e3,2e3), 57e3, 250000)
-        self.freq_xlating_fir_filter_xxx_0 = filter.freq_xlating_fir_filter_ccc(1, firdes.low_pass(1, samp_rate, 80000, 20000), freq_offset, samp_rate)
-        self.fir_filter_xxx_1 = filter.fir_filter_fff(5, firdes.low_pass(1.0,240000,13e3,3e3))
+        self.freq_xlating_fir_filter_xxx_1_0 = filter.freq_xlating_fir_filter_fcc(10, firdes.low_pass(1.0, samp_rate / decimation, 2.4e3, 10e3), 57e3, samp_rate / decimation)
+        self.freq_xlating_fir_filter_xxx_0 = filter.freq_xlating_fir_filter_ccc(decimation, firdes.low_pass(1, samp_rate, 100000, 20000), freq_offset, samp_rate)
+        self.fir_filter_xxx_2 = filter.fir_filter_ccc(1, rrc_taps_manchester)
+        self.fir_filter_xxx_2.declare_sample_delay(0)
+        self.fir_filter_xxx_1_0 = filter.fir_filter_fff(5, firdes.low_pass(-2.1,240000,15e3,2e3))
+        self.fir_filter_xxx_1_0.declare_sample_delay(0)
+        self.fir_filter_xxx_1 = filter.fir_filter_fff(5, firdes.low_pass(1.0,240000,15e3,2e3))
         self.fir_filter_xxx_1.declare_sample_delay(0)
-        self.digital_psk_demod_0 = digital.psk.psk_demod(
-            constellation_points=2,
-            differential=False,
-            samples_per_symbol=4,
-            excess_bw=0.35,
-            phase_bw=6.28/100.0,
-            timing_bw=6.28/100.0,
-            mod_code="gray",
-            verbose=False,
-            log=False)
-        self.digital_diff_decoder_bb_0 = digital.diff_decoder_bb(2)
+        self.fir_filter_xxx_0 = filter.fir_filter_fcc(1, pilot_taps)
+        self.fir_filter_xxx_0.declare_sample_delay(0)
+        self.digital_symbol_sync_xx_0 = digital.symbol_sync_cc(
+            digital.TED_ZERO_CROSSING,
+            16,
+            0.01,
+            1.0,
+            1.0,
+            0.1,
+            1,
+            digital.constellation_bpsk().base(),
+            digital.IR_MMSE_8TAP,
+            128,
+            [])
+        self.digital_diff_decoder_bb_0 = digital.diff_decoder_bb(2, digital.DIFF_DIFFERENTIAL)
+        self.digital_constellation_receiver_cb_0 = digital.constellation_receiver_cb(digital.constellation_bpsk().base(), 2*math.pi / 100, -0.002, 0.002)
         self.blocks_sub_xx_0 = blocks.sub_ff(1)
+        self.blocks_multiply_xx_1 = blocks.multiply_vff(1)
+        self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
         self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_ff(10**(1.*(volume)/10))
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff(10**(1.*(volume)/10))
-        self.blocks_keep_one_in_n_0 = blocks.keep_one_in_n(gr.sizeof_char*1, 2)
-        self.blocks_complex_to_real_0 = blocks.complex_to_real(1)
+        self.blocks_delay_0 = blocks.delay(gr.sizeof_float*1, (len(pilot_taps) - 1) // 2)
+        self.blocks_complex_to_imag_0 = blocks.complex_to_imag(1)
         self.blocks_add_xx_0 = blocks.add_vff(1)
         self.audio_sink_0 = audio.sink(48000, '', True)
-        self.analog_wfm_rcv_0 = analog.wfm_rcv(
-        	quad_rate=samp_rate,
-        	audio_decimation=8,
-        )
+        self.analog_quadrature_demod_cf_0 = analog.quadrature_demod_cf((samp_rate / decimation) / (2*math.pi*75000))
+        self.analog_pll_refout_cc_0 = analog.pll_refout_cc(0.001, 2 * math.pi * 19020 / 240000, 2 * math.pi * 18980 / 240000)
         self.analog_fm_deemph_0_0_0 = analog.fm_deemph(fs=48000, tau=75e-6)
         self.analog_fm_deemph_0_0 = analog.fm_deemph(fs=48000, tau=75e-6)
+        self.analog_agc_xx_0 = analog.agc_cc(2e-3, 0.702*0+0.585, 106/2)
+        self.analog_agc_xx_0.set_max_gain(1000)
 
 
 
@@ -267,30 +273,38 @@ class rds_rx(gr.top_block, Qt.QWidget):
         ##################################################
         self.msg_connect((self.rds_decoder_0, 'out'), (self.rds_parser_0, 'in'))
         self.msg_connect((self.rds_parser_0, 'out'), (self.rds_panel_0, 'in'))
+        self.connect((self.analog_agc_xx_0, 0), (self.digital_symbol_sync_xx_0, 0))
         self.connect((self.analog_fm_deemph_0_0, 0), (self.blocks_multiply_const_vxx_0_0, 0))
         self.connect((self.analog_fm_deemph_0_0_0, 0), (self.blocks_multiply_const_vxx_0, 0))
-        self.connect((self.analog_wfm_rcv_0, 0), (self.freq_xlating_fir_filter_xxx_1_0, 0))
-        self.connect((self.analog_wfm_rcv_0, 0), (self.pfb_arb_resampler_xxx_1, 0))
-        self.connect((self.analog_wfm_rcv_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
+        self.connect((self.analog_pll_refout_cc_0, 0), (self.blocks_multiply_xx_0, 0))
+        self.connect((self.analog_pll_refout_cc_0, 0), (self.blocks_multiply_xx_0, 1))
+        self.connect((self.analog_quadrature_demod_cf_0, 0), (self.freq_xlating_fir_filter_xxx_1_0, 0))
+        self.connect((self.analog_quadrature_demod_cf_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
+        self.connect((self.analog_quadrature_demod_cf_0, 0), (self.rational_resampler_xxx_0, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.analog_fm_deemph_0_0_0, 0))
-        self.connect((self.blocks_complex_to_real_0, 0), (self.blocks_add_xx_0, 1))
-        self.connect((self.blocks_complex_to_real_0, 0), (self.blocks_sub_xx_0, 1))
-        self.connect((self.blocks_keep_one_in_n_0, 0), (self.digital_diff_decoder_bb_0, 0))
+        self.connect((self.blocks_complex_to_imag_0, 0), (self.blocks_multiply_xx_1, 1))
+        self.connect((self.blocks_delay_0, 0), (self.blocks_multiply_xx_1, 0))
+        self.connect((self.blocks_delay_0, 0), (self.fir_filter_xxx_1, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.audio_sink_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.audio_sink_0, 1))
+        self.connect((self.blocks_multiply_xx_0, 0), (self.blocks_complex_to_imag_0, 0))
+        self.connect((self.blocks_multiply_xx_1, 0), (self.fir_filter_xxx_1_0, 0))
         self.connect((self.blocks_sub_xx_0, 0), (self.analog_fm_deemph_0_0, 0))
+        self.connect((self.digital_constellation_receiver_cb_0, 0), (self.digital_diff_decoder_bb_0, 0))
         self.connect((self.digital_diff_decoder_bb_0, 0), (self.rds_decoder_0, 0))
-        self.connect((self.digital_psk_demod_0, 0), (self.blocks_keep_one_in_n_0, 0))
+        self.connect((self.digital_symbol_sync_xx_0, 0), (self.digital_constellation_receiver_cb_0, 0))
+        self.connect((self.fir_filter_xxx_0, 0), (self.analog_pll_refout_cc_0, 0))
         self.connect((self.fir_filter_xxx_1, 0), (self.blocks_add_xx_0, 0))
         self.connect((self.fir_filter_xxx_1, 0), (self.blocks_sub_xx_0, 0))
-        self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.analog_wfm_rcv_0, 0))
+        self.connect((self.fir_filter_xxx_1_0, 0), (self.blocks_add_xx_0, 1))
+        self.connect((self.fir_filter_xxx_1_0, 0), (self.blocks_sub_xx_0, 1))
+        self.connect((self.fir_filter_xxx_2, 0), (self.analog_agc_xx_0, 0))
+        self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.analog_quadrature_demod_cf_0, 0))
         self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.qtgui_freq_sink_x_0, 0))
-        self.connect((self.freq_xlating_fir_filter_xxx_1_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
-        self.connect((self.freq_xlating_fir_filter_xxx_2, 0), (self.blocks_complex_to_real_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.root_raised_cosine_filter_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_1, 0), (self.fir_filter_xxx_1, 0))
-        self.connect((self.pfb_arb_resampler_xxx_1, 0), (self.freq_xlating_fir_filter_xxx_2, 0))
-        self.connect((self.root_raised_cosine_filter_0, 0), (self.digital_psk_demod_0, 0))
+        self.connect((self.freq_xlating_fir_filter_xxx_1_0, 0), (self.rational_resampler_xxx_1, 0))
+        self.connect((self.rational_resampler_xxx_0, 0), (self.blocks_delay_0, 0))
+        self.connect((self.rational_resampler_xxx_0, 0), (self.fir_filter_xxx_0, 0))
+        self.connect((self.rational_resampler_xxx_1, 0), (self.fir_filter_xxx_2, 0))
         self.connect((self.rtlsdr_source_0_0, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
 
 
@@ -301,6 +315,13 @@ class rds_rx(gr.top_block, Qt.QWidget):
         self.wait()
 
         event.accept()
+
+    def get_rrc_taps(self):
+        return self.rrc_taps
+
+    def set_rrc_taps(self, rrc_taps):
+        self.rrc_taps = rrc_taps
+        self.set_rrc_taps_manchester([self.rrc_taps[n] - self.rrc_taps[n+8] for n in range(len(self.rrc_taps)-8)])
 
     def get_freq_offset(self):
         return self.freq_offset
@@ -331,17 +352,34 @@ class rds_rx(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.freq_xlating_fir_filter_xxx_0.set_taps(firdes.low_pass(1, self.samp_rate, 80000, 20000))
-        self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate)
-        self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.samp_rate)
+        self.analog_quadrature_demod_cf_0.set_gain((self.samp_rate / self.decimation) / (2*math.pi*75000))
+        self.freq_xlating_fir_filter_xxx_0.set_taps(firdes.low_pass(1, self.samp_rate, 100000, 20000))
+        self.freq_xlating_fir_filter_xxx_1_0.set_taps(firdes.low_pass(1.0, self.samp_rate / self.decimation, 2.4e3, 10e3))
+        self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate / self.decimation)
+        self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.samp_rate / self.decimation)
         self.rtlsdr_source_0_0.set_sample_rate(self.samp_rate)
+
+    def get_rrc_taps_manchester(self):
+        return self.rrc_taps_manchester
+
+    def set_rrc_taps_manchester(self, rrc_taps_manchester):
+        self.rrc_taps_manchester = rrc_taps_manchester
+        self.fir_filter_xxx_2.set_taps(self.rrc_taps_manchester)
+
+    def get_pilot_taps(self):
+        return self.pilot_taps
+
+    def set_pilot_taps(self, pilot_taps):
+        self.pilot_taps = pilot_taps
+        self.blocks_delay_0.set_dly((len(self.pilot_taps) - 1) // 2)
+        self.fir_filter_xxx_0.set_taps(self.pilot_taps)
 
     def get_gain(self):
         return self.gain
 
     def set_gain(self, gain):
         self.gain = gain
-        self.rtlsdr_source_0_0.set_bb_gain(self.gain, 0)
+        self.rtlsdr_source_0_0.set_gain(self.gain, 0)
 
     def get_freq_tune(self):
         return self.freq_tune
@@ -349,6 +387,16 @@ class rds_rx(gr.top_block, Qt.QWidget):
     def set_freq_tune(self, freq_tune):
         self.freq_tune = freq_tune
         self.rtlsdr_source_0_0.set_center_freq(self.freq_tune, 0)
+
+    def get_decimation(self):
+        return self.decimation
+
+    def set_decimation(self, decimation):
+        self.decimation = decimation
+        self.analog_quadrature_demod_cf_0.set_gain((self.samp_rate / self.decimation) / (2*math.pi*75000))
+        self.freq_xlating_fir_filter_xxx_1_0.set_taps(firdes.low_pass(1.0, self.samp_rate / self.decimation, 2.4e3, 10e3))
+        self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate / self.decimation)
+        self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.samp_rate / self.decimation)
 
 
 
