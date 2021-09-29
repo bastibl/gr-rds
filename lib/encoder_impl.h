@@ -48,8 +48,8 @@ private:
 
 	// FIXME make this a struct (or a class)
 	unsigned char PTY;
-	char radiotext[64];
-	char PS[8];
+	unsigned char radiotext[64];
+	unsigned char PS[8];
 	bool TA;
 	bool TP;
 	bool MS;
