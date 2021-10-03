@@ -196,12 +196,12 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    gain: 106/2
+    gain: '53'
     max_gain: '1000'
     maxoutbuf: '0'
     minoutbuf: '0'
     rate: 2e-3
-    reference: 0.702*0+0.585
+    reference: '0.585'
     type: complex
   states:
     bus_sink: false
@@ -609,7 +609,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     samp_rate: samp_rate / decimation
-    taps: firdes.low_pass(1.0, samp_rate / decimation, 2.4e3, 10e3)
+    taps: firdes.low_pass(1.0, samp_rate / decimation, 7.5e3, 5e3)
     type: fcc
   states:
     bus_sink: false
