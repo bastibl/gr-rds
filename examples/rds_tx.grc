@@ -434,7 +434,7 @@ blocks:
     samp_rate: usrp_rate
     type: interp_fir_filter_fff
     width: .5e3
-    win: firdes.WIN_HAMMING
+    win: window.WIN_HAMMING
   states:
     coordinate: [680, 320]
     rotation: 0
@@ -455,7 +455,7 @@ blocks:
     samp_rate: usrp_rate
     type: interp_fir_filter_fff
     width: 2e3
-    win: firdes.WIN_HAMMING
+    win: window.WIN_HAMMING
   states:
     coordinate: [552, 696]
     rotation: 0
@@ -476,7 +476,7 @@ blocks:
     samp_rate: usrp_rate
     type: interp_fir_filter_fff
     width: 2e3
-    win: firdes.WIN_HAMMING
+    win: window.WIN_HAMMING
   states:
     coordinate: [552, 840]
     rotation: 0
@@ -807,7 +807,7 @@ blocks:
     width7: '1'
     width8: '1'
     width9: '1'
-    wintype: firdes.WIN_BLACKMAN_hARRIS
+    wintype: window.WIN_BLACKMAN_hARRIS
     ymax: '10'
     ymin: '-140'
   states:

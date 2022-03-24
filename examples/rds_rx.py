@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: Stereo FM receiver and RDS Decoder
-# GNU Radio version: v3.9.0.0-145-g68418b4d
+# GNU Radio version: v3.9.2.0-95-g02c0d949
 
 from distutils.version import StrictVersion
 
@@ -36,12 +36,11 @@ import signal
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
+from gnuradio import soapy
 from gnuradio.filter import pfb
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
 import math
-import osmosdr
-import time
 import rds
 
 
@@ -115,21 +114,19 @@ class rds_rx(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.rtlsdr_source_0_0 = osmosdr.source(
-            args="numchan=" + str(1) + " " + ''
-        )
-        self.rtlsdr_source_0_0.set_time_unknown_pps(osmosdr.time_spec_t())
-        self.rtlsdr_source_0_0.set_sample_rate(samp_rate)
-        self.rtlsdr_source_0_0.set_center_freq(freq_tune, 0)
-        self.rtlsdr_source_0_0.set_freq_corr(0, 0)
-        self.rtlsdr_source_0_0.set_dc_offset_mode(0, 0)
-        self.rtlsdr_source_0_0.set_iq_balance_mode(0, 0)
-        self.rtlsdr_source_0_0.set_gain_mode(False, 0)
-        self.rtlsdr_source_0_0.set_gain(14, 0)
-        self.rtlsdr_source_0_0.set_if_gain(24, 0)
-        self.rtlsdr_source_0_0.set_bb_gain(gain, 0)
-        self.rtlsdr_source_0_0.set_antenna('', 0)
-        self.rtlsdr_source_0_0.set_bandwidth(0, 0)
+        self.soapy_limesdr_source_0 = None
+        dev = 'driver=lime'
+        stream_args = ''
+        tune_args = ['']
+        settings = ['']
+
+        self.soapy_limesdr_source_0 = soapy.source(dev, "fc32", 1, '',
+                                  stream_args, tune_args, settings)
+        self.soapy_limesdr_source_0.set_sample_rate(0, samp_rate)
+        self.soapy_limesdr_source_0.set_bandwidth(0, 0.0)
+        self.soapy_limesdr_source_0.set_frequency(0, freq_tune)
+        self.soapy_limesdr_source_0.set_frequency_correction(0, 0)
+        self.soapy_limesdr_source_0.set_gain(0, min(max(gain, -12.0), 61.0))
         self.root_raised_cosine_filter_0 = filter.fir_filter_ccf(
             2,
             firdes.root_raised_cosine(
@@ -177,6 +174,7 @@ class rds_rx(gr.top_block, Qt.QWidget):
         self.qtgui_waterfall_sink_x_0.set_intensity_range(-140, 10)
 
         self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.pyqwidget(), Qt.QWidget)
+
         self.top_layout.addWidget(self._qtgui_waterfall_sink_x_0_win)
         self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
             1024, #size
@@ -245,7 +243,7 @@ class rds_rx(gr.top_block, Qt.QWidget):
             mod_code="gray",
             verbose=False,
             log=False)
-        self.digital_diff_decoder_bb_0 = digital.diff_decoder_bb(2)
+        self.digital_diff_decoder_bb_0 = digital.diff_decoder_bb(2, digital.DIFF_DIFFERENTIAL)
         self.blocks_sub_xx_0 = blocks.sub_ff(1)
         self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_ff(10**(1.*(volume)/10))
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff(10**(1.*(volume)/10))
@@ -291,7 +289,7 @@ class rds_rx(gr.top_block, Qt.QWidget):
         self.connect((self.pfb_arb_resampler_xxx_1, 0), (self.fir_filter_xxx_1, 0))
         self.connect((self.pfb_arb_resampler_xxx_1, 0), (self.freq_xlating_fir_filter_xxx_2, 0))
         self.connect((self.root_raised_cosine_filter_0, 0), (self.digital_psk_demod_0, 0))
-        self.connect((self.rtlsdr_source_0_0, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
+        self.connect((self.soapy_limesdr_source_0, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
 
 
     def closeEvent(self, event):
@@ -334,21 +332,21 @@ class rds_rx(gr.top_block, Qt.QWidget):
         self.freq_xlating_fir_filter_xxx_0.set_taps(firdes.low_pass(1, self.samp_rate, 80000, 20000))
         self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate)
         self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.samp_rate)
-        self.rtlsdr_source_0_0.set_sample_rate(self.samp_rate)
+        self.soapy_limesdr_source_0.set_sample_rate(0, self.samp_rate)
 
     def get_gain(self):
         return self.gain
 
     def set_gain(self, gain):
         self.gain = gain
-        self.rtlsdr_source_0_0.set_bb_gain(self.gain, 0)
+        self.soapy_limesdr_source_0.set_gain(0, min(max(self.gain, -12.0), 61.0))
 
     def get_freq_tune(self):
         return self.freq_tune
 
     def set_freq_tune(self, freq_tune):
         self.freq_tune = freq_tune
-        self.rtlsdr_source_0_0.set_center_freq(self.freq_tune, 0)
+        self.soapy_limesdr_source_0.set_frequency(0, self.freq_tune)
 
 
 

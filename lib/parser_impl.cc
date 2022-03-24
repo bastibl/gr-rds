@@ -24,6 +24,8 @@
 #include <gnuradio/io_signature.h>
 #include <math.h>
 #include <boost/locale.hpp>
+#include <iomanip>
+#include <limits>
 
 using namespace gr::rds;
 

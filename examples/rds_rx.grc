@@ -310,6 +310,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
+    coding: digital.DIFF_DIFFERENTIAL
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -1091,7 +1092,29 @@ blocks:
     bus_structure: null
     coordinate: [71, 356]
     rotation: 0
-    state: enabled
+    state: disabled
+- name: soapy_limesdr_source_0
+  id: soapy_limesdr_source
+  parameters:
+    affinity: ''
+    alias: ''
+    bandwidth: '0.0'
+    center_freq: freq_tune
+    comment: ''
+    dev_args: ''
+    freq_correction: '0'
+    gain: gain
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    type: fc32
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [128, 204.0]
+    rotation: 0
+    state: true
 - name: uhd_usrp_source_0
   id: uhd_usrp_source
   parameters:
@@ -1557,6 +1580,7 @@ connections:
 - [rds_parser_0, out, rds_panel_0, in]
 - [root_raised_cosine_filter_0, '0', digital_psk_demod_0, '0']
 - [rtlsdr_source_0_0, '0', freq_xlating_fir_filter_xxx_0, '0']
+- [soapy_limesdr_source_0, '0', freq_xlating_fir_filter_xxx_0, '0']
 - [uhd_usrp_source_0, '0', freq_xlating_fir_filter_xxx_0, '0']
 
 metadata:
