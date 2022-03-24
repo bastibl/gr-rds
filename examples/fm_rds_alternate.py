@@ -36,6 +36,7 @@ from gnuradio import blocks
 from gnuradio import digital
 from gnuradio import filter
 from gnuradio import gr
+from gnuradio.fft import window
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
@@ -207,7 +208,7 @@ class fm_rds_alternate(gr.top_block, Qt.QWidget):
             self.tabs_grid_layout_3.setColumnStretch(c, 1)
         self.qtgui_freq_sink_x_1 = qtgui.freq_sink_c(
             1024, #size
-            firdes.WIN_BLACKMAN_hARRIS, #wintype
+            window.WIN_BLACKMAN_hARRIS, #wintype
             0, #fc
             rrc_sample_rate, #bw
             "RDS Spectrum", #name
@@ -251,7 +252,7 @@ class fm_rds_alternate(gr.top_block, Qt.QWidget):
             self.tabs_grid_layout_2.setColumnStretch(c, 1)
         self.qtgui_freq_sink_x_0_0_0_1_0_1 = qtgui.freq_sink_f(
             1024, #size
-            firdes.WIN_RECTANGULAR, #wintype
+            window.WIN_RECTANGULAR, #wintype
             0.0, #fc
             baseband_sample_rate, #bw
             "DSB-SC Spectrum", #name
@@ -297,7 +298,7 @@ class fm_rds_alternate(gr.top_block, Qt.QWidget):
             self.tabs_grid_layout_3.setColumnStretch(c, 1)
         self.qtgui_freq_sink_x_0_0_0_1_0_0 = qtgui.freq_sink_f(
             1024, #size
-            firdes.WIN_RECTANGULAR, #wintype
+            window.WIN_RECTANGULAR, #wintype
             0.0, #fc
             baseband_sample_rate / 5, #bw
             "L-R Spectrum", #name
@@ -343,7 +344,7 @@ class fm_rds_alternate(gr.top_block, Qt.QWidget):
             self.tabs_grid_layout_3.setColumnStretch(c, 1)
         self.qtgui_freq_sink_x_0_0_0_1_0 = qtgui.freq_sink_f(
             1024, #size
-            firdes.WIN_RECTANGULAR, #wintype
+            window.WIN_RECTANGULAR, #wintype
             0.0, #fc
             baseband_sample_rate / 5, #bw
             "L+R Spectrum", #name
@@ -389,7 +390,7 @@ class fm_rds_alternate(gr.top_block, Qt.QWidget):
             self.tabs_grid_layout_3.setColumnStretch(c, 1)
         self.qtgui_freq_sink_x_0_0_0_1 = qtgui.freq_sink_f(
             4096, #size
-            firdes.WIN_RECTANGULAR, #wintype
+            window.WIN_RECTANGULAR, #wintype
             0.0, #fc
             baseband_sample_rate, #bw
             "FM demodulated spectrum", #name
@@ -435,7 +436,7 @@ class fm_rds_alternate(gr.top_block, Qt.QWidget):
             self.tabs_grid_layout_1.setColumnStretch(c, 1)
         self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
             4096, #size
-            firdes.WIN_BLACKMAN_hARRIS, #wintype
+            window.WIN_BLACKMAN_hARRIS, #wintype
             fm_freq, #fc
             samp_rate/x_decimation, #bw
             "Radio Spectrum", #name
@@ -522,7 +523,7 @@ class fm_rds_alternate(gr.top_block, Qt.QWidget):
             self.tabs_grid_layout_2.setRowStretch(r, 1)
         for c in range(5, 9):
             self.tabs_grid_layout_2.setColumnStretch(c, 1)
-        self.freq_xlating_fir_filter_xxx_1 = filter.freq_xlating_fir_filter_fcc(rds_decim, firdes.low_pass(2500.0,baseband_sample_rate,2.2e3,2e3,firdes.WIN_HAMMING), 57e3, baseband_sample_rate)
+        self.freq_xlating_fir_filter_xxx_1 = filter.freq_xlating_fir_filter_fcc(rds_decim, firdes.low_pass(2500.0,baseband_sample_rate,2.2e3,2e3,window.WIN_HAMMING), 57e3, baseband_sample_rate)
         self.freq_xlating_fir_filter_xxx_0 = filter.freq_xlating_fir_filter_ccc(x_decimation, firdes.low_pass(1, samp_rate, 100e3, 100e3), 0, samp_rate)
         self.fm_stereo_audio_decoder_0 = fm_stereo_audio_decoder(
             audio_rate=audio_rate,
@@ -713,7 +714,7 @@ class fm_rds_alternate(gr.top_block, Qt.QWidget):
     def set_baseband_sample_rate(self, baseband_sample_rate):
         self.baseband_sample_rate = baseband_sample_rate
         self.fm_stereo_audio_decoder_0.set_baseband_rate(self.baseband_sample_rate)
-        self.freq_xlating_fir_filter_xxx_1.set_taps(firdes.low_pass(2500.0,self.baseband_sample_rate,2.2e3,2e3,firdes.WIN_HAMMING))
+        self.freq_xlating_fir_filter_xxx_1.set_taps(firdes.low_pass(2500.0,self.baseband_sample_rate,2.2e3,2e3,window.WIN_HAMMING))
         self.qtgui_freq_sink_x_0_0_0_1.set_frequency_range(0.0, self.baseband_sample_rate)
         self.qtgui_freq_sink_x_0_0_0_1_0.set_frequency_range(0.0, self.baseband_sample_rate / 5)
         self.qtgui_freq_sink_x_0_0_0_1_0_0.set_frequency_range(0.0, self.baseband_sample_rate / 5)

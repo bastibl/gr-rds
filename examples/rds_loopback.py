@@ -29,6 +29,7 @@ from gnuradio import blocks
 from gnuradio import digital
 from gnuradio import filter
 from gnuradio import gr
+from gnuradio.fft import window
 import sys
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
@@ -139,7 +140,7 @@ class rds_loopback(gr.top_block, Qt.QWidget):
                 fractional_bw=None)
         self.qtgui_waterfall_sink_x_0 = qtgui.waterfall_sink_f(
             1024, #size
-            firdes.WIN_BLACKMAN_hARRIS, #wintype
+            window.WIN_BLACKMAN_hARRIS, #wintype
             0, #fc
             baseband_rate, #bw
             "", #name
@@ -223,7 +224,7 @@ class rds_loopback(gr.top_block, Qt.QWidget):
         self.tabs_layout_0.addWidget(self._qtgui_time_sink_x_0_win)
         self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
             1024, #size
-            firdes.WIN_BLACKMAN_hARRIS, #wintype
+            window.WIN_BLACKMAN_hARRIS, #wintype
             0, #fc
             audio_rate, #bw
             "", #name
@@ -268,7 +269,7 @@ class rds_loopback(gr.top_block, Qt.QWidget):
                 usrp_rate,
                 2.5e3,
                 .5e3,
-                firdes.WIN_HAMMING,
+                window.WIN_HAMMING,
                 6.76))
         self._input_gain_range = Range(0, 10, 0.1, 1, 200)
         self._input_gain_win = RangeWidget(self._input_gain_range, self.set_input_gain, 'input_gain', "counter_slider", float)
@@ -281,7 +282,7 @@ class rds_loopback(gr.top_block, Qt.QWidget):
         self.gr_frequency_modulator_fc_0 = analog.frequency_modulator_fc(2*math.pi*fm_max_dev/usrp_rate)
         self.gr_diff_encoder_bb_0 = digital.diff_encoder_bb(2)
         self.gr_char_to_float_0 = blocks.char_to_float(1, 1)
-        self.freq_xlating_fir_filter_xxx_1 = filter.freq_xlating_fir_filter_fcc(audio_decim, firdes.low_pass(2500.0,baseband_rate,2.4e3,2e3,firdes.WIN_HAMMING), 57e3, baseband_rate)
+        self.freq_xlating_fir_filter_xxx_1 = filter.freq_xlating_fir_filter_fcc(audio_decim, firdes.low_pass(2500.0,baseband_rate,2.4e3,2e3,window.WIN_HAMMING), 57e3, baseband_rate)
         self.freq_xlating_fir_filter_xxx_0 = filter.freq_xlating_fir_filter_ccc(1, firdes.low_pass(1, samp_rate, xlate_bandwidth, 100000), 0, samp_rate)
         self._freq_range = Range(88.0e6, 108.0e6, 0.1e6, 97e6, 200)
         self._freq_win = RangeWidget(self._freq_range, self.set_freq, 'freq', "counter_slider", float)
@@ -369,7 +370,7 @@ class rds_loopback(gr.top_block, Qt.QWidget):
     def set_baseband_rate(self, baseband_rate):
         self.baseband_rate = baseband_rate
         self.set_audio_decim_rate(self.baseband_rate/self.audio_decim)
-        self.freq_xlating_fir_filter_xxx_1.set_taps(firdes.low_pass(2500.0,self.baseband_rate,2.4e3,2e3,firdes.WIN_HAMMING))
+        self.freq_xlating_fir_filter_xxx_1.set_taps(firdes.low_pass(2500.0,self.baseband_rate,2.4e3,2e3,window.WIN_HAMMING))
         self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.baseband_rate)
 
     def get_audio_decim(self):
@@ -394,7 +395,7 @@ class rds_loopback(gr.top_block, Qt.QWidget):
         self.usrp_rate = usrp_rate
         self.gr_frequency_modulator_fc_0.set_sensitivity(2*math.pi*self.fm_max_dev/self.usrp_rate)
         self.gr_sig_source_x_0_0.set_sampling_freq(self.usrp_rate)
-        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.usrp_rate, 2.5e3, .5e3, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.usrp_rate, 2.5e3, .5e3, window.WIN_HAMMING, 6.76))
 
     def get_stereo_gain(self):
         return self.stereo_gain
