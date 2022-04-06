@@ -33,6 +33,8 @@ decoder_impl::decoder_impl(bool log, bool debug)
 	: gr::sync_block ("gr_rds_decoder",
 			gr::io_signature::make (1, 1, sizeof(char)),
 			gr::io_signature::make (0, 0, 0)),
+	bit_counter(0),
+	reg(0),
 	log(log),
 	debug(debug)
 {
