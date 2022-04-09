@@ -39,7 +39,7 @@ encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
 	pty_locale(pty_locale) {
 
 	message_port_register_in(pmt::mp("rds in"));
-	set_msg_handler(pmt::mp("rds in"), std::bind(&encoder_impl::rds_in, this, std::placeholders::_1));
+	set_msg_handler(pmt::mp("rds in"), [this](pmt::pmt_t msg) { this->rds_in(msg); });
 
 	std::memset(infoword,    0, sizeof(infoword));
 	std::memset(checkword,   0, sizeof(checkword));
