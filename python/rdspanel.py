@@ -149,10 +149,10 @@ class rdsPanel(gr.sync_block, QtWidgets.QWidget):
                                 self.music.setText("Speech")
                                 self.music.setStyleSheet("font-weight: bold; color: red")
                         if (flags[3]=='1'):
-                                self.stereo.setText("Mono")
+                                self.stereo.setText("Stereo")
                                 self.stereo.setStyleSheet("font-weight: bold; color: red")
                         else:
-                                self.stereo.setText("Stereo")
+                                self.stereo.setText("Mono")
                                 self.stereo.setStyleSheet("font-weight: bold; color: red")
                         if (flags[4]=='1'):
                                 self.AH.setStyleSheet("font-weight: bold; color: red")

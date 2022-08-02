@@ -163,7 +163,7 @@ void parser_impl::decode_type0(unsigned int *group, bool B) {
 		<< "<== -" << (traffic_program ? "TP" : "  ")
 		<< '-' << (traffic_announcement ? "TA" : "  ")
 		<< '-' << (music_speech ? "Music" : "Speech")
-		<< '-' << (mono_stereo ? "MONO" : "STEREO")
+		<< '-' << (mono_stereo ? "STEREO" : "MONO")
 		<< " - AF:" << af_string << std::endl;
 
 	send_message(1, std::string(program_service_name, 8));
