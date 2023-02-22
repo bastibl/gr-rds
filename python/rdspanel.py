@@ -127,11 +127,11 @@ class rdsPanel(gr.sync_block, QtWidgets.QWidget):
         def msg_slot(self, msg_type, msg):
 
                 if (msg_type==0):     #program information
-                        self.program.setText(msg)
+                        self.pi.setText(msg)
                 elif (msg_type==1):   #station name
                         self.station.setText(msg)
                 elif (msg_type==2):   #program type
-                        self.pi.setText(msg)
+                        self.program.setText(msg)
                 elif (msg_type==3):   #flags
                         flags=msg
                         if (flags[0]=='1'):
