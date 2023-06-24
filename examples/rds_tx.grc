@@ -23,6 +23,7 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: ''
+    window_size: (1000,1000)
   states:
     bus_sink: false
     bus_source: false
@@ -59,8 +60,9 @@ blocks:
 - name: input_gain
   id: variable
   parameters:
-    comment: ''
-    value: '0.26'
+    comment: "FM Stereo &-RDS TX  Mod. index % : \n42,5% (L+R) \n42,5% (L-R) DSB SC\n\
+      10% 19khz tone\n5%   RDS BPSK DSB SC"
+    value: '0.425'
   states:
     bus_sink: false
     bus_source: false
@@ -114,6 +116,42 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1096, 12.0]
+    rotation: 0
+    state: enabled
+- name: analog_fm_preemph_0
+  id: analog_fm_preemph
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Time constant in seconds \n(75us in US, 50us in EUR)"
+    fh: '-1.0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: 48e3
+    tau: 75e-6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [232, 708.0]
+    rotation: 0
+    state: enabled
+- name: analog_fm_preemph_0_0
+  id: analog_fm_preemph
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Time constant in seconds \n(75us in US, 50us in EUR)"
+    fh: '-1.0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: 48e3
+    tau: 75e-6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [232, 828.0]
     rotation: 0
     state: enabled
 - name: audio_source_0
@@ -190,7 +228,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 728.0]
+    coordinate: [680, 728.0]
     rotation: 0
     state: enabled
 - name: gr_add_xx_1
@@ -208,7 +246,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [816, 800]
+    coordinate: [1152.0, 816]
     rotation: 270
     state: enabled
 - name: gr_diff_encoder_bb_0
@@ -293,7 +331,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [776, 601]
+    coordinate: [1176, 608.0]
     rotation: 0
     state: enabled
 - name: gr_sig_source_x_0
@@ -309,6 +347,7 @@ blocks:
     offset: '0'
     phase: '0'
     samp_rate: usrp_rate
+    showports: 'False'
     type: float
     waveform: analog.GR_SIN_WAVE
   states:
@@ -331,6 +370,7 @@ blocks:
     offset: '0'
     phase: '0'
     samp_rate: usrp_rate
+    showports: 'False'
     type: float
     waveform: analog.GR_SIN_WAVE
   states:
@@ -353,6 +393,7 @@ blocks:
     offset: '0'
     phase: '0'
     samp_rate: usrp_rate
+    showports: 'False'
     type: float
     waveform: analog.GR_SIN_WAVE
   states:
@@ -377,7 +418,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 872.0]
+    coordinate: [672, 872.0]
     rotation: 0
     state: enabled
 - name: gr_unpack_k_bits_bb_0
@@ -430,7 +471,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 692.0]
+    coordinate: [816, 692.0]
     rotation: 0
     state: enabled
 - name: low_pass_filter_0_0_0
@@ -454,7 +495,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 836.0]
+    coordinate: [816, 836.0]
     rotation: 0
     state: enabled
 - name: osmosdr_sink_0
@@ -796,7 +837,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [936, 884]
+    coordinate: [1264, 888.0]
     rotation: 0
     state: enabled
 - name: rational_resampler_xxx_0
@@ -816,7 +857,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [208, 700.0]
+    coordinate: [424, 700.0]
     rotation: 0
     state: enabled
 - name: rational_resampler_xxx_0_0
@@ -836,7 +877,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [208, 804.0]
+    coordinate: [424, 820.0]
     rotation: 0
     state: enabled
 - name: rational_resampler_xxx_1
@@ -1187,8 +1228,10 @@ blocks:
     state: disabled
 
 connections:
-- [audio_source_0, '0', rational_resampler_xxx_0, '0']
-- [audio_source_0, '1', rational_resampler_xxx_0_0, '0']
+- [analog_fm_preemph_0, '0', rational_resampler_xxx_0, '0']
+- [analog_fm_preemph_0_0, '0', rational_resampler_xxx_0_0, '0']
+- [audio_source_0, '0', analog_fm_preemph_0, '0']
+- [audio_source_0, '1', analog_fm_preemph_0_0, '0']
 - [blocks_socket_pdu_0, pdus, rds_encoder_0, rds in]
 - [digital_chunks_to_symbols_xx_0, '0', root_raised_cosine_filter_0, '0']
 - [gr_add_xx_0, '0', low_pass_filter_0_0, '0']
@@ -1217,3 +1260,4 @@ connections:
 
 metadata:
   file_format: 1
+  grc_version: 3.10.6.0

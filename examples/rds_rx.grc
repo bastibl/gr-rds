@@ -23,6 +23,7 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: Stereo FM receiver and RDS Decoder
+    window_size: (1000,1000)
   states:
     bus_sink: false
     bus_source: false
@@ -120,6 +121,7 @@ blocks:
     low_cutoff_freq: '18980'
     samp_rate: '240000'
     type: complex_band_pass
+    value: ''
     width: '1000'
     win: window.WIN_HAMMING
   states:
@@ -138,6 +140,7 @@ blocks:
     ntaps: '151'
     samp_rate: '19000'
     sym_rate: 19000/8
+    value: ''
   states:
     bus_sink: false
     bus_source: false
@@ -215,7 +218,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "FM deemphasis,\nTime constant in seconds \n(75us in US, 50us in EUR)"
     maxoutbuf: '0'
     minoutbuf: '0'
     samp_rate: '48000'
@@ -339,6 +342,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_ports: '1'
+    showports: 'False'
     type: float
     vlen: '1'
   states:
@@ -1750,3 +1754,4 @@ connections:
 
 metadata:
   file_format: 1
+  grc_version: 3.10.6.0
