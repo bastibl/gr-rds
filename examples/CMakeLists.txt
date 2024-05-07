@@ -8,4 +8,4 @@
 install(
     FILES rds_rx.grc
           rds_tx.grc
-    DESTINATION ${GR_PKG_DATA_DIR}/examples)
+    DESTINATION share/gnuradio/examples/rds)
