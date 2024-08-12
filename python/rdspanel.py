@@ -162,7 +162,7 @@ class rdsPanel(gr.sync_block, QtWidgets.QWidget):
                                 self.CMP.setStyleSheet("font-weight: bold; color: red")
                         else:
                                 self.CMP.setStyleSheet("font-weight: bold; color: gray")
-                        if (flags[6]=='1'):
+                        if (flags[6]=='0'):
                                 self.stPTY.setStyleSheet("font-weight: bold; color: red")
                         else:
                                 self.stPTY.setStyleSheet("font-weight: bold; color: gray")
