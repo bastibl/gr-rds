@@ -37,7 +37,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '8'
+    value: '6'
   states:
     bus_sink: false
     bus_source: false
@@ -164,7 +164,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2000000'
+    value: '1920000'
   states:
     bus_sink: false
     bus_source: false
@@ -593,7 +593,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     samp_rate: samp_rate
-    taps: firdes.low_pass(1, samp_rate, 100000, 20000)
+    taps: firdes.low_pass(1, samp_rate, 135000, 20000)
     type: ccc
   states:
     bus_sink: false
@@ -1754,4 +1754,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.6.0
+  grc_version: 3.10.11.0
