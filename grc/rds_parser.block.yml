@@ -42,6 +42,6 @@ templates:
     imports: import rds
     make: rds.parser(${log}, ${debug}, ${pty_locale})
     callbacks:
-    - reset(${reset})
+    - 'reset() # ${reset}'
 
 file_format: 1
