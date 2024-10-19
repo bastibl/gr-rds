@@ -912,7 +912,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     pty_locale: '0'
-    reset: '0'
+    reset: freq
   states:
     bus_sink: false
     bus_source: false
