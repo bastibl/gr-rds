@@ -324,7 +324,7 @@ blocks:
     comment: ''
     dimension: '1'
     in_type: byte
-    maxoutbuf: '0'
+    maxoutbuf: outbuffer
     minoutbuf: '0'
     num_ports: '1'
     out_type: float
@@ -360,7 +360,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    maxoutbuf: outbuffer
+    maxoutbuf: '0'
     minoutbuf: '0'
     num_inputs: '4'
     type: float
@@ -395,7 +395,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    maxoutbuf: outbuffer
+    maxoutbuf: '0'
     minoutbuf: '0'
     sensitivity: 2*math.pi*fm_max_dev/usrp_rate
   states:
@@ -427,7 +427,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    maxoutbuf: outbuffer
+    maxoutbuf: '0'
     minoutbuf: '0'
     num_inputs: '2'
     type: float
@@ -981,7 +981,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    maxoutbuf: '0'
+    maxoutbuf: outbuffer
     minoutbuf: '0'
     ms: 'True'
     pi_country_code: '13'
