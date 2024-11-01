@@ -25,6 +25,7 @@
 #include <math.h>
 #include <boost/locale.hpp>
 #include <iomanip>
+#include <limits>
 
 using namespace gr::rds;
 
@@ -60,6 +61,7 @@ void parser_impl::reset() {
 	traffic_program                = false;
 	traffic_announcement           = false;
 	music_speech                   = false;
+	program_identification         = UINT_MAX;
 	program_type                   = 0;
 	pi_country_identification      = 0;
 	pi_area_coverage               = 0;
@@ -585,6 +587,9 @@ void parser_impl::parse(pmt::pmt_t pdu) {
 	lout << std::setfill('0') << std::setw(2) << group_type << (ab ? 'B' : 'A') << " ";
 	lout << "(" << rds_group_acronyms[group_type] << ")";
 
+	if (program_identification != group[0]) {
+		reset();
+	}
 	program_identification = group[0];     // "PI"
 	program_type = (group[1] >> 5) & 0x1f; // "PTY"
 	int pi_country_identification = (program_identification >> 12) & 0xf;
