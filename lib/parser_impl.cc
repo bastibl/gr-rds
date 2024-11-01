@@ -24,6 +24,7 @@
 #include <gnuradio/io_signature.h>
 #include <math.h>
 #include <boost/locale.hpp>
+#include <cstring>
 #include <iomanip>
 #include <limits>
 
@@ -54,7 +55,7 @@ parser_impl::~parser_impl() {
 void parser_impl::reset() {
 	gr::thread::scoped_lock lock(d_mutex);
 
-	memset(radiotext, ' ', sizeof(radiotext));
+	radiotext_segment_flags            = 0;
 	program_service_name_segment_flags = 0;
 
 	radiotext_AB_flag              = 0;
@@ -287,12 +288,12 @@ void parser_impl::decode_type2(unsigned int *group, bool B){
 
 	// when the A/B flag is toggled, flush your current radiotext
 	if(radiotext_AB_flag != ((group[1] >> 4) & 0x01)) {
-		std::memset(radiotext, ' ', sizeof(radiotext));
+		radiotext_segment_flags = 0;
 	}
 	radiotext_AB_flag = (group[1] >> 4) & 0x01;
 
 	if(!B) {
-		radiotext[text_segment_address_code *4     ] = (group[2] >> 8) & 0xff;
+		radiotext[text_segment_address_code * 4    ] = (group[2] >> 8) & 0xff;
 		radiotext[text_segment_address_code * 4 + 1] =  group[2]       & 0xff;
 		radiotext[text_segment_address_code * 4 + 2] = (group[3] >> 8) & 0xff;
 		radiotext[text_segment_address_code * 4 + 3] =  group[3]       & 0xff;
@@ -300,10 +301,35 @@ void parser_impl::decode_type2(unsigned int *group, bool B){
 		radiotext[text_segment_address_code * 2    ] = (group[3] >> 8) & 0xff;
 		radiotext[text_segment_address_code * 2 + 1] =  group[3]       & 0xff;
 	}
-	lout << "Radio Text " << (radiotext_AB_flag ? 'B' : 'A')
-		<< ": " << std::string(radiotext, sizeof(radiotext))
-		<< std::endl;
-	send_message(4,std::string(radiotext, sizeof(radiotext)));
+	radiotext_segment_flags |= (1 << text_segment_address_code);
+
+	// Count how many valid segments we have.
+	int valid_segments = 0;
+	for (int segment_address = 0; segment_address < 16; segment_address++) {
+		if (radiotext_segment_flags & (1 << segment_address)) {
+			valid_segments++;
+		} else {
+			break;
+		}
+	}
+
+	// Check for the end of the radiotext, indicated by a carriage return.
+	int segment_width = (B ? 2 : 4);
+	char *tail = (char *) std::memchr(radiotext, '\r', valid_segments * segment_width);
+
+	// Special case: radiotext that take up the entire buffer is not
+	// required to have a trailing carriage return.
+	if (!tail && (valid_segments == 16)) {
+		tail = radiotext + (16 * segment_width);
+	}
+
+	// If the radiotext is complete, report it.
+	if (tail) {
+		lout << "Radio Text " << (radiotext_AB_flag ? 'B' : 'A')
+			<< ": " << std::string(radiotext, tail - radiotext)
+			<< std::endl;
+		send_message(4, std::string(radiotext, tail - radiotext));
+	}
 }
 
 void parser_impl::decode_type3(unsigned int *group, bool B){
