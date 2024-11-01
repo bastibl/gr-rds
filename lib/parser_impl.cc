@@ -55,7 +55,7 @@ void parser_impl::reset() {
 	gr::thread::scoped_lock lock(d_mutex);
 
 	memset(radiotext, ' ', sizeof(radiotext));
-	memset(program_service_name, '.', sizeof(program_service_name));
+	program_service_name_segment_flags = 0;
 
 	radiotext_AB_flag              = 0;
 	traffic_program                = false;
@@ -101,8 +101,29 @@ void parser_impl::decode_type0(unsigned int *group, bool B) {
 	bool decoder_control_bit      = (group[1] >> 2) & 0x01; // "DI"
 	unsigned char segment_address =  group[1] & 0x03;       // "DI segment"
 
-	program_service_name[segment_address * 2]     = (group[3] >> 8) & 0xff;
-	program_service_name[segment_address * 2 + 1] =  group[3]       & 0xff;
+	char ps_1 = (group[3] >> 8) & 0xff;
+	char ps_2 =  group[3]       & 0xff;
+
+	if (program_service_name_segment_flags & (1 << segment_address)) {
+		// Already received this segment. Check whether the characters have changed.
+		if ((program_service_name[segment_address * 2] != ps_1) 
+				|| (program_service_name[segment_address * 2 + 1] != ps_2)) {
+			// The characters changed, so reset and start from scratch.
+			program_service_name[segment_address * 2]     = ps_1;
+			program_service_name[segment_address * 2 + 1] = ps_2;
+			program_service_name_segment_flags = (1 << segment_address);
+		}
+	} else {
+		// New segment received. Store it.
+		program_service_name[segment_address * 2]     = ps_1;
+		program_service_name[segment_address * 2 + 1] = ps_2;
+		program_service_name_segment_flags |= (1 << segment_address);
+
+		// If we now have all segments, report the full program service name.
+		if (program_service_name_segment_flags == 0xf) {
+			send_message(1, std::string(program_service_name, 8));
+		}
+	}
 
 	/* see page 41, table 9 of the standard */
 	switch (segment_address) {
@@ -168,7 +189,6 @@ void parser_impl::decode_type0(unsigned int *group, bool B) {
 		<< '-' << (mono_stereo ? "STEREO" : "MONO")
 		<< " - AF:" << af_string << std::endl;
 
-	send_message(1, std::string(program_service_name, 8));
 	send_message(3, flagstring);
 	send_message(6, af_string);
 }
