@@ -60,7 +60,8 @@ private:
 	unsigned char  pi_area_coverage;
 	unsigned char  pi_program_reference_number;
 	char           radiotext[65];
-	char           program_service_name[9];
+	char           program_service_name[8];
+	unsigned int   program_service_name_segment_flags;
 	bool           radiotext_AB_flag;
 	bool           traffic_program;
 	bool           traffic_announcement;
