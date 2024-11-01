@@ -84,7 +84,7 @@ unsigned int decoder_impl::calc_syndrome(unsigned long message,
 
 void decoder_impl::decode_group(unsigned int *group) {
 	// raw data bytes, as received from RDS.
-	// 8 info bytes, followed by 4 RDS offset chars: ABCD/ABcD/EEEE (in US)
+	// 8 info bytes, followed by 4 RDS offset chars: ABCD/ABcD
 	unsigned char bytes[12];
 
 	// RDS information words

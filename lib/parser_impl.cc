@@ -577,7 +577,7 @@ void parser_impl::parse(pmt::pmt_t pdu) {
 	group[2] = bytes[5] | (((unsigned int)(bytes[4])) << 8U);
 	group[3] = bytes[7] | (((unsigned int)(bytes[6])) << 8U);
 
-	// TODO: verify offset chars are one of: "ABCD", "ABcD", "EEEE" (in US)
+	// TODO: verify offset chars are one of: "ABCD", "ABcD"
 
 	unsigned int group_type = (unsigned int)((group[1] >> 12) & 0xf);
 	bool ab = (group[1] >> 11 ) & 0x1;
