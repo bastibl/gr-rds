@@ -24,6 +24,7 @@
 #include <gnuradio/io_signature.h>
 #include <math.h>
 #include <boost/locale.hpp>
+#include <algorithm>
 #include <cstring>
 #include <iomanip>
 #include <limits>
@@ -57,6 +58,7 @@ void parser_impl::reset() {
 
 	radiotext_segment_flags            = 0;
 	program_service_name_segment_flags = 0;
+	af_pairs.clear();
 
 	radiotext_AB_flag              = 0;
 	traffic_program                = false;
@@ -150,36 +152,12 @@ void parser_impl::decode_type0(unsigned int *group, bool B) {
 	flagstring[4] = artificial_head        ? '1' : '0';
 	flagstring[5] = compressed             ? '1' : '0';
 	flagstring[6] = dynamic_pty            ? '1' : '0';
-	static std::string af_string;
 
 	if(!B) { // type 0A
-		af_code_1 = int(group[2] >> 8) & 0xff;
-		af_code_2 = int(group[2])      & 0xff;
-		af_1 = decode_af(af_code_1);
-		af_2 = decode_af(af_code_2);
-
-		std::stringstream af_stringstream;
-		af_stringstream << std::fixed << std::setprecision(2);
-
-		if(af_1) {
-			if(af_1 > 80e3) {
-				af_stringstream << (af_1/1e3) << "MHz";
-			} else if((af_1<2e3)&&(af_1>100)) {
-				af_stringstream << int(af_1) << "kHz";
-			}
-		}
-		if(af_1 && af_2) {
-			af_stringstream << ", ";
-		}
-		if(af_2) {
-			if(af_2 > 80e3) {
-				af_stringstream << (af_2/1e3) << "MHz";
-			} else if((af_2<2e3)&&(af_2>100)) {
-				af_stringstream << int(af_2) << "kHz";
-			}
-		}
-		if(af_1 || af_2) {
-			af_string = af_stringstream.str();
+		// Check whether this is a new pair of AF codes
+		if (std::find(af_pairs.begin(), af_pairs.end(), group[2]) == af_pairs.end()) {
+			af_pairs.push_back(group[2]);
+			decode_af_pairs();
 		}
 	}
 
@@ -188,44 +166,129 @@ void parser_impl::decode_type0(unsigned int *group, bool B) {
 		<< '-' << (traffic_announcement ? "TA" : "  ")
 		<< '-' << (music_speech ? "Music" : "Speech")
 		<< '-' << (mono_stereo ? "STEREO" : "MONO")
-		<< " - AF:" << af_string << std::endl;
+		<< std::endl;
 
 	send_message(3, flagstring);
-	send_message(6, af_string);
 }
 
-double parser_impl::decode_af(unsigned int af_code) {
-	static unsigned int number_of_freqs = 0;
-	static bool vhf_or_lfmf             = 0; // 0 = vhf, 1 = lf/mf
-	double alt_frequency                = 0; // in kHz
+void parser_impl::decode_af_pairs() {
+	// Search for the first row, which indicates the number of frequencies
+	int first_row = -1;
+	int number_of_freqs = -1;
+	int freqs_seen = 0;
+	std::vector<int> freqs;
 
-	if((af_code == 0) ||                              // not to be used
-		( af_code == 205) ||                      // filler code
-		((af_code >= 206) && (af_code <= 223)) || // not assigned
-		( af_code == 224) ||                      // No AF exists
-		( af_code >= 251)) {                      // not assigned
-			number_of_freqs = 0;
-			alt_frequency   = 0;
-	}
-	if((af_code >= 225) && (af_code <= 249)) {        // VHF frequencies follow
-		number_of_freqs = af_code - 224;
-		alt_frequency   = 0;
-		vhf_or_lfmf     = 1;
-	}
-	if(af_code == 250) {                              // an LF/MF frequency follows
-		number_of_freqs = 1;
-		alt_frequency   = 0;
-		vhf_or_lfmf     = 0;
+	for (int i = 0; i < af_pairs.size(); i++) {
+		unsigned int af_1 = (af_pairs[i] >> 8);
+
+		if ((af_1 >= 224) && (af_1 <= 249)) {
+			first_row = i;
+			number_of_freqs = af_1 - 224;
+			break;
+		}
 	}
 
-	if((af_code > 0) && (af_code < 205) && vhf_or_lfmf)
-		alt_frequency = 100.0 * (af_code + 875);          // VHF (87.6-107.9MHz)
-	else if((af_code > 0) && (af_code < 16) && !vhf_or_lfmf)
-		alt_frequency = 153.0 + (af_code - 1) * 9;        // LF (153-279kHz)
-	else if((af_code > 15) && (af_code < 136) && !vhf_or_lfmf)
-		alt_frequency = 531.0 + (af_code - 16) * 9 + 531; // MF (531-1602kHz)
+	if (number_of_freqs == 0) {
+		return;
+	}
 
-	return alt_frequency;
+	if (first_row >= 0) {
+		unsigned int special_af = 0;
+		for (int i = first_row; i < first_row + af_pairs.size(); i++) {
+			unsigned int af_1 = (af_pairs[i % af_pairs.size()] >> 8);
+			unsigned int af_2 = (af_pairs[i % af_pairs.size()] & 0xff);
+
+			if (i == first_row) {
+				int freq = decode_af(af_2, false);
+				if (freq >= 0) {
+					freqs.push_back(freq);
+					freqs_seen++;
+					special_af = af_2;
+				}
+			} else if (af_1 == 250) {
+				// One LF/MF frequency follows
+				int freq = decode_af(af_2, true);
+				if (freq >= 0) {
+					freqs.push_back(freq);
+					freqs_seen++;
+				}
+			} else {
+				if ((af_1 == special_af) || (af_2 == special_af)) {
+					// AF method B
+					bool regional = (af_2 < af_1);
+
+					unsigned int new_af = (af_1 == special_af) ? af_2 : af_1;
+					int freq = decode_af(new_af, false);
+					if (freq >= 0) {
+						freqs.push_back(regional ? -freq : freq); // Negative indicates regional frequency
+						freqs_seen += 2;
+					}
+				} else {
+					int freq = decode_af(af_1, false);
+					if (freq >= 0) {
+						freqs.push_back(freq);
+						freqs_seen++;
+					}
+					freq = decode_af(af_2, false);
+					if (freq >= 0) {
+						freqs.push_back(freq);
+						freqs_seen++;
+					}
+				}
+			}
+		}
+
+		// Check whether we have the whole frequency list
+		if (freqs_seen == number_of_freqs) {
+			std::stringstream af_stringstream;
+			af_stringstream << std::fixed << std::setprecision(1);
+
+			bool first = true;
+			for (int freq : freqs) {
+				bool regional = false;
+				if (freq < 0) {
+					freq = -freq;
+					regional = true;
+				}
+
+				if (first) {
+					first = false;
+				} else {
+					af_stringstream << ", ";
+				}
+
+				if (freq > 10000) {
+					af_stringstream << (freq / 1000.0) << " MHz";
+				} else {
+					af_stringstream << freq << " kHz";
+				}
+
+				if (regional) {
+					af_stringstream << " (regional)";
+				}
+			}
+
+			send_message(6, af_stringstream.str());
+			lout << "AF: " << af_stringstream.str() << std::endl;
+		}
+	}
+
+}
+
+int parser_impl::decode_af(unsigned int af_code, bool lf_mf) {
+	if (lf_mf) {
+		if ((af_code >= 1) && (af_code <= 15)) {
+			return 153 + (af_code - 1) * 9; // LF (153-279kHz)
+		} else if ((af_code >= 16) && (af_code < 135)) {
+			return 531 + (af_code - 16) * 9; // MF (531-1602kHz)
+		}
+	} else {
+		if ((af_code >= 1) && (af_code <= 204)) {
+			return 87600 + (af_code - 1) * 100; // VHF (87.6-107.9MHz)
+		}
+	}
+
+	return -1; // Invalid input
 }
 
 void parser_impl::decode_type1(unsigned int *group, bool B){
