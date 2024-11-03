@@ -34,7 +34,8 @@ private:
 	void reset();
 	void send_message(long, std::string);
 	void parse(pmt::pmt_t pdu);
-	double decode_af(unsigned int);
+	void decode_af_pairs();
+	int decode_af(unsigned int af_code, bool lf_mf);
 	void decode_optional_content(int, unsigned long int *);
 
 	void decode_type0( unsigned int* group, bool B);
@@ -64,6 +65,7 @@ private:
 	char           program_service_name[8];
 	unsigned int   program_service_name_segment_flags;
 	bool           radiotext_AB_flag;
+	std::vector<unsigned int> af_pairs;
 	bool           traffic_program;
 	bool           traffic_announcement;
 	bool           music_speech;
