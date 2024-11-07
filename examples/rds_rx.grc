@@ -262,7 +262,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [876.0, 568]
+    coordinate: [880.0, 568]
     rotation: 270
     state: true
 - name: analog_quadrature_demod_cf_0
@@ -329,7 +329,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [976.0, 504]
+    coordinate: [984.0, 504]
     rotation: 90
     state: enabled
 - name: blocks_delay_0
@@ -403,7 +403,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [960.0, 680]
+    coordinate: [968.0, 680]
     rotation: 90
     state: true
 - name: blocks_multiply_xx_1
@@ -431,48 +431,14 @@ blocks:
     alias: ''
     bus_structure_sink: '[[0,],]'
     comment: ''
-    num_inputs: '1'
+    num_inputs: '3'
     type: float
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [920, 832.0]
-    rotation: 0
-    state: enabled
-- name: blocks_null_sink_1
-  id: blocks_null_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    bus_structure_sink: '[[0,],]'
-    comment: ''
-    num_inputs: '1'
-    type: float
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [920, 864.0]
-    rotation: 0
-    state: enabled
-- name: blocks_null_sink_2
-  id: blocks_null_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    bus_structure_sink: '[[0,],]'
-    comment: ''
-    num_inputs: '1'
-    type: float
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [920, 896.0]
+    coordinate: [928, 832.0]
     rotation: 0
     state: enabled
 - name: blocks_sub_xx_0
@@ -1877,8 +1843,8 @@ connections:
 - [blocks_sub_xx_0, '0', analog_fm_deemph_0_0, '0']
 - [digital_constellation_receiver_cb_0, '0', digital_diff_decoder_bb_0, '0']
 - [digital_constellation_receiver_cb_0, '1', blocks_null_sink_0, '0']
-- [digital_constellation_receiver_cb_0, '2', blocks_null_sink_1, '0']
-- [digital_constellation_receiver_cb_0, '3', blocks_null_sink_2, '0']
+- [digital_constellation_receiver_cb_0, '2', blocks_null_sink_0, '1']
+- [digital_constellation_receiver_cb_0, '3', blocks_null_sink_0, '2']
 - [digital_constellation_receiver_cb_0, '4', qtgui_const_sink_x_0, '0']
 - [digital_diff_decoder_bb_0, '0', rds_decoder_0, '0']
 - [digital_symbol_sync_xx_0, '0', digital_constellation_receiver_cb_0, '0']
