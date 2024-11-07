@@ -43,8 +43,8 @@ parser_impl::parser_impl(bool log, bool debug, unsigned char pty_locale)
 	log(log),
 	debug(debug),
 	pty_locale(pty_locale),
-	no_groups(0),
 	free_format{0, 0, 0, 0},
+	no_groups(0),
 	ps_on{' ',' ',' ',' ',' ',' ',' ',' '}
 {
 	message_port_register_in(pmt::mp("in"));
@@ -94,10 +94,6 @@ void parser_impl::send_message(long msgtype, std::string msgtext) {
 
 /* BASIC TUNING: see page 21 of the standard */
 void parser_impl::decode_type0(unsigned int *group, bool B) {
-	unsigned int af_code_1 = 0;
-	unsigned int af_code_2 = 0;
-	double af_1            = 0;
-	double af_2            = 0;
 	char flagstring[8]     = "0000000";
 
 	traffic_program        = (group[1] >> 10) & 0x01;       // "TP"
@@ -181,7 +177,7 @@ void parser_impl::decode_af_pairs() {
 	int freqs_seen = 0;
 	std::vector<int> freqs;
 
-	for (int i = 0; i < af_pairs.size(); i++) {
+	for (unsigned int i = 0; i < af_pairs.size(); i++) {
 		unsigned int af_1 = (af_pairs[i] >> 8);
 
 		if ((af_1 >= 224) && (af_1 <= 249)) {
@@ -197,11 +193,11 @@ void parser_impl::decode_af_pairs() {
 
 	if (first_row >= 0) {
 		unsigned int special_af = 0;
-		for (int i = first_row; i < first_row + af_pairs.size(); i++) {
+		for (unsigned int i = first_row; i < first_row + af_pairs.size(); i++) {
 			unsigned int af_1 = (af_pairs[i % af_pairs.size()] >> 8);
 			unsigned int af_2 = (af_pairs[i % af_pairs.size()] & 0xff);
 
-			if (i == first_row) {
+			if ((int)i == first_row) {
 				int freq = decode_af(af_2, false);
 				if (freq >= 0) {
 					freqs.push_back(freq);
