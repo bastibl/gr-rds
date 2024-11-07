@@ -36,6 +36,7 @@ encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
 	: gr::sync_block ("gr_rds_encoder",
 			gr::io_signature::make (0, 0, 0),
 			gr::io_signature::make (1, 1, sizeof(unsigned char))),
+			count(0),
 	pty_locale(pty_locale) {
 
 	message_port_register_in(pmt::mp("rds in"));
@@ -407,7 +408,6 @@ void encoder_impl::prepare_group1a(void) {
 
 void encoder_impl::prepare_group3a(void) {
 	std::cout << "preparing group 3" << std::endl;
-	static int count = 0;
 	if(count) {
 		infoword[1] = infoword[1] | (0x31d0 & 0x1f);
 		infoword[2] = 0x6280;

@@ -60,6 +60,7 @@ private:
 	int extent;
 	int event;
 	int location;
+	int count;
 	gr::thread::mutex d_mutex;
 
 /* each type 0 group contains 2 out of 8 PS characters;

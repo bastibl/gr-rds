@@ -76,6 +76,9 @@ private:
 	bool           log;
 	bool           debug;
 	unsigned char  pty_locale;
+	unsigned long int free_format[4];
+	int no_groups;
+	char ps_on[8];
 	gr::thread::mutex d_mutex;
 };
 
