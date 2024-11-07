@@ -42,7 +42,10 @@ parser_impl::parser_impl(bool log, bool debug, unsigned char pty_locale)
 			gr::io_signature::make (0, 0, 0)),
 	log(log),
 	debug(debug),
-	pty_locale(pty_locale)
+	pty_locale(pty_locale),
+	no_groups(0),
+	free_format{0, 0, 0, 0},
+	ps_on{' ',' ',' ',' ',' ',' ',' ',' '}
 {
 	message_port_register_in(pmt::mp("in"));
 	set_msg_handler(pmt::mp("in"), [this](pmt::pmt_t msg) { this->parse(msg); });
@@ -494,8 +497,6 @@ void parser_impl::decode_type8(unsigned int *group, bool B){
 	bool T = (group[1] >> 4) & 0x1; // 0 = user message, 1 = tuning info
 	bool F = (group[1] >> 3) & 0x1; // 0 = multi-group, 1 = single-group
 	bool D = (group[2] > 15) & 0x1; // 1 = diversion recommended
-	static unsigned long int free_format[4];
-	static int no_groups = 0;
 
 	if(T) { // tuning info
 		lout << "#tuning info# ";
@@ -592,7 +593,6 @@ void parser_impl::decode_type14(unsigned int *group, bool B){
 
 	char pty_on = 0;
 	bool ta_on = 0;
-	static char ps_on[8] = {' ',' ',' ',' ',' ',' ',' ',' '};
 	double af_1 = 0;
 	double af_2 = 0;
 
