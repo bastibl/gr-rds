@@ -36,7 +36,6 @@ encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
 	: gr::sync_block ("gr_rds_encoder",
 			gr::io_signature::make (0, 0, 0),
 			gr::io_signature::make (1, 1, sizeof(unsigned char))),
-			count(0),
 	pty_locale(pty_locale) {
 
 	message_port_register_in(pmt::mp("rds in"));
@@ -49,6 +48,7 @@ encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
 	nbuffers             = 0;
 	d_g0_counter         = 0;
 	d_g2_counter         = 0;
+	d_g3_counter         = 0;
 	d_current_buffer     = 0;
 	d_buffer_bit_counter = 0;
 
@@ -408,7 +408,7 @@ void encoder_impl::prepare_group1a(void) {
 
 void encoder_impl::prepare_group3a(void) {
 	std::cout << "preparing group 3" << std::endl;
-	if(count) {
+	if(d_g3_counter) {
 		infoword[1] = infoword[1] | (0x31d0 & 0x1f);
 		infoword[2] = 0x6280;
 		infoword[3] = 0xcd46;
@@ -417,8 +417,8 @@ void encoder_impl::prepare_group3a(void) {
 		infoword[2] = 0x0066;
 		infoword[3] = 0xcd46; // AID for TMC (Alert C)
 	}
-	count++;
-	count = count % 2;
+	d_g3_counter++;
+	d_g3_counter %= 2;
 }
 
 /* see page 28 and Annex G, page 81 in the standard */
