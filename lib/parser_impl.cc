@@ -492,7 +492,7 @@ void parser_impl::decode_type8(unsigned int *group, bool B){
 	}
 	bool T = (group[1] >> 4) & 0x1; // 0 = user message, 1 = tuning info
 	bool F = (group[1] >> 3) & 0x1; // 0 = multi-group, 1 = single-group
-	bool D = (group[2] > 15) & 0x1; // 1 = diversion recommended
+	bool D = (group[2] >> 15) & 0x1; // 1 = diversion recommended
 
 	if(T) { // tuning info
 		lout << "#tuning info# ";
@@ -510,8 +510,11 @@ void parser_impl::decode_type8(unsigned int *group, bool B){
 		unsigned int extent   = (group[2] >> 11) & 0x7;   // number of segments affected
 		unsigned int event    =  group[2]        & 0x7ff; // event code, defined in ISO 14819-2
 		unsigned int location =  group[3];                // location code, defined in ISO 14819-3
-		lout << "#user msg# " << (D ? "diversion recommended, " : "");
+		lout << "#user msg# ";
 		if(F) {
+			if (D) {
+				lout << "diversion recommended, ";
+			}
 			lout << "single-grp, duration:" << tmc_duration[dp_ci][0];
 		} else {
 			lout << "multi-grp, continuity index:" << dp_ci;
