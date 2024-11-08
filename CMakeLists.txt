@@ -70,6 +70,8 @@ ELSE()
     message(WARNING "C standard could not be set because compiler is not GNU, Clang or MSVC.")
 ENDIF()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+
 ########################################################################
 # Install directories
 ########################################################################
