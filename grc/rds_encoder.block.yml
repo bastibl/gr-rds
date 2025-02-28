@@ -69,8 +69,9 @@ parameters:
     option_labels: [Local, International, National, Supra-regional, Regional 1, Regional
             2, Regional 3, Regional 4, Regional 5, Regional 6, Regional 7, Regional
             8, Regional 9, Regional 10, Regional 11, Regional 12]
+    hide: ${ ('all' if str(pi_country_code) == '0' else 'none') }
 -   id: pi_reference_number
-    label: PI Program Reference Number
+    label: ${ ('PI Code' if str(pi_country_code) == '0' else 'PI Program Reference Number') }
     dtype: int
     default: '147'
 -   id: radiotext
