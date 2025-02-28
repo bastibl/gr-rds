@@ -52,9 +52,14 @@ encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
 	d_current_buffer     = 0;
 	d_buffer_bit_counter = 0;
 
-	PI                   = (pi_country_code & 0xF) << 12 |
-	                       (pi_coverage_area & 0xF) << 8 |
-	                       (pi_reference_number);
+	if (pi_country_code == 0) {
+		PI                 = pi_reference_number;
+	} else {
+		PI                 = (pi_country_code & 0xF) << 12 |
+		                     (pi_coverage_area & 0xF) << 8 |
+		                     (pi_reference_number);
+	}
+
 	PTY                  = pty;     // programm type (education)
 	TP                   = tp;      // traffic programm
 	TA                   = ta;      // traffic announcement
