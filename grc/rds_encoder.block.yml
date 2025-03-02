@@ -57,9 +57,9 @@ parameters:
     label: PI Country Code
     dtype: int
     default: '13'
-    options: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13',
+    options: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13',
         '15']
-    option_labels: [DE, DZ, AD, IL, IT, BE, RU, PS, AL, AT, HU, MT, DE, EG]
+    option_labels: [Other, DE, DZ, AD, IL, IT, BE, RU, PS, AL, AT, HU, MT, DE, EG]
 -   id: pi_coverage_area
     label: PI Coverage Area
     dtype: int
@@ -69,8 +69,9 @@ parameters:
     option_labels: [Local, International, National, Supra-regional, Regional 1, Regional
             2, Regional 3, Regional 4, Regional 5, Regional 6, Regional 7, Regional
             8, Regional 9, Regional 10, Regional 11, Regional 12]
+    hide: ${ ('all' if str(pi_country_code) == '0' else 'none') }
 -   id: pi_reference_number
-    label: PI Program Reference Number
+    label: ${ ('PI Code' if str(pi_country_code) == '0' else 'PI Program Reference Number') }
     dtype: int
     default: '147'
 -   id: radiotext
