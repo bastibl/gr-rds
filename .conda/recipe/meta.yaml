@@ -61,8 +61,8 @@ test:
     # test that example flowgraphs compile
     {% set flowgraphs = ["rds_rx", "rds_tx"] %}
     {% for flowgraph in flowgraphs %}
-    - grcc $PREFIX/share/gr-{{ oot_name }}/examples/{{ flowgraph }}.grc  # [not win]
-    - grcc %PREFIX%\\Library\\share\\gr-{{ oot_name }}\\examples\\{{ flowgraph }}.grc  # [win]
+    - grcc $PREFIX/share/gnuradio/examples/{{ oot_name }}/{{ flowgraph }}.grc  # [not win]
+    - grcc %PREFIX%\\Library\\share\\gnuradio\\examples\\{{ oot_name }}\\{{ flowgraph }}.grc  # [win]
     {% endfor %}
 
     # verify that (some) headers get installed

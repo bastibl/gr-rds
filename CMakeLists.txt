@@ -175,3 +175,7 @@ endif(ENABLE_PYTHON)
 install(FILES cmake/Modules/rdsConfig.cmake
     DESTINATION ${CMAKE_MODULES_DIR}/rds
 )
+
+install(FILES MANIFEST.yml
+    RENAME MANIFEST-${VERSION_MAJOR}.${VERSION_API}.${VERSION_ABI}${VERSION_PATCH}.yml
+    DESTINATION share/gnuradio/manifests/rds)
