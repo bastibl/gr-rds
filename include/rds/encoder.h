@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #ifndef INCLUDED_RDS_ENCODER_H
 #define INCLUDED_RDS_ENCODER_H
 
@@ -27,10 +28,22 @@ class RDS_API encoder : virtual public gr::sync_block
 {
 public:
 	typedef std::shared_ptr<encoder> sptr;
-	static sptr make(unsigned char pty_locale, int pty, bool ms, std::string ps,
-                     double af1, bool tp, bool ta,
-                     int pi_country_code, int pi_coverage_area,
-                     int pi_reference_number, std::string radiotext);
+	static sptr make(unsigned char pty_locale,
+                     int pty,
+                     bool ms,
+                     std::string ps,
+                     bool af,
+                     double af1,
+                     bool tp,
+                     bool ta,
+                     bool tmc,
+                     bool ct,
+                     int pi_country_code,
+                     int pi_coverage_area,
+                     int pi_reference_number,
+                     std::string radiotext,
+                     bool enable_ecc,
+                     unsigned char ecc);
 
     virtual void set_ps(std::string ps) = 0;
 };
@@ -39,4 +52,3 @@ public:
 }
 
 #endif /* INCLUDED_RDS_ENCODER_H */
-
