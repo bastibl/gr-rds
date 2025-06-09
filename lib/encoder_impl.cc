@@ -71,11 +71,11 @@ encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
 		                     (pi_reference_number);
 	}
 
-	PTY                  = pty;
-	TP                   = tp;
-	TA                   = ta;
-	MS                   = ms;
-	AF1                  = af1;
+	PTY                  = pty;     // programm type (education)
+	TP                   = tp;      // traffic programm
+	TA                   = ta;      // traffic announcement
+	MS                   = ms;      // music/speech switch (1=music)
+	AF1                  = af1;     // alternate frequency 1
 
 	DP                   = 3;
 	extent               = 2;
