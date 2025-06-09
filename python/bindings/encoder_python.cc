@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Free Software Foundation, Inc.
+ * Copyright 2021-2022 Free Software Foundation, Inc.
  *
  * This file is part of GNU Radio
  *
@@ -13,8 +13,8 @@
 /* If manual edits are made, the following tags should be modified accordingly.    */
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
-/* BINDTOOL_HEADER_FILE(encoder.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(baad12f97f57978fc0a3f0b5fec44341)                     */
+/* BINDTOOL_HEADER_FILE(encoder.h)                                       	       */
+/* BINDTOOL_HEADER_FILE_HASH(67c382b4126ed6cf3956c324eec3b60d)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -29,49 +29,35 @@ namespace py = pybind11;
 
 void bind_encoder(py::module& m)
 {
+    using encoder = ::gr::rds::encoder;
 
-    using encoder    = ::gr::rds::encoder;
-
-
-    py::class_<encoder, gr::sync_block, gr::block, gr::basic_block,
-        std::shared_ptr<encoder>>(m, "encoder", D(encoder))
+    py::class_<encoder,
+               gr::sync_block,
+               gr::block,
+               gr::basic_block,
+               std::shared_ptr<encoder>>(m, "encoder", D(encoder))
 
         .def(py::init(&encoder::make),
-           py::arg("pty_locale"),
-           py::arg("pty"),
-           py::arg("ms"),
-           py::arg("ps"),
-           py::arg("af1"),
-           py::arg("tp"),
-           py::arg("ta"),
-           py::arg("pi_country_code"),
-           py::arg("pi_coverage_area"),
-           py::arg("pi_reference_number"),
-           py::arg("radiotext"),
-           D(encoder,make)
-        )
-        
+             py::arg("pty_locale"),
+             py::arg("pty"),
+             py::arg("ms"),
+             py::arg("ps"),
+             py::arg("af"),
+             py::arg("af1"),
+             py::arg("tp"),
+             py::arg("ta"),
+             py::arg("tmc"),
+             py::arg("ct"),
+             py::arg("pi_country_code"),
+             py::arg("pi_coverage_area"),
+             py::arg("pi_reference_number"),
+             py::arg("radiotext"),
+             py::arg("enable_ecc"),
+             py::arg("ecc"),
+             D(encoder, make))
 
-
-
-
-        
-        .def("set_ps",&encoder::set_ps,       
-            py::arg("ps"),
-            D(encoder,set_ps)
-        )
-
-        ;
-
-
-
-
+        .def("set_ps",
+             &encoder::set_ps,
+             py::arg("ps"),
+             D(encoder, set_ps));
 }
-
-
-
-
-
-
-
-
