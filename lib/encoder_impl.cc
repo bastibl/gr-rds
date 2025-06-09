@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -26,17 +27,24 @@
 #include <ctype.h>
 #include <time.h>
 #include <cstdio>
+#include <iostream>
 
 using namespace gr::rds;
 
 encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
-		std::string ps, double af1, bool tp,
-		bool ta, int pi_country_code, int pi_coverage_area,
-		int pi_reference_number, std::string radiotext)
+		std::string ps, bool af, double af1, bool tp,
+		bool ta, bool tmc, bool ct, int pi_country_code, int pi_coverage_area,
+		int pi_reference_number, std::string radiotext, bool enable_ecc, unsigned char ecc)
 	: gr::sync_block ("gr_rds_encoder",
 			gr::io_signature::make (0, 0, 0),
 			gr::io_signature::make (1, 1, sizeof(unsigned char))),
-	pty_locale(pty_locale) {
+	  pty_locale(pty_locale),
+      d_af(af),
+      d_tmc(tmc),
+      d_ct(ct),
+      d_enable_ecc(enable_ecc),
+      d_ecc(ecc)
+{
 
 	message_port_register_in(pmt::mp("rds in"));
 	set_msg_handler(pmt::mp("rds in"), [this](pmt::pmt_t msg) { this->rds_in(msg); });
@@ -45,12 +53,15 @@ encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
 	std::memset(checkword,   0, sizeof(checkword));
 	std::memset(groups,      0, sizeof(groups));
 
+    buffer               = nullptr; // IMPORTANT: Initialize pointer to null
+    d_is_group4a         = nullptr; // Initialize new tracking array
 	nbuffers             = 0;
 	d_g0_counter         = 0;
 	d_g2_counter         = 0;
 	d_g3_counter         = 0;
 	d_current_buffer     = 0;
 	d_buffer_bit_counter = 0;
+    d_last_ct_time       = 0;       // Initialize last time update tracker
 
 	if (pi_country_code == 0) {
 		PI                 = pi_reference_number;
@@ -60,11 +71,11 @@ encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
 		                     (pi_reference_number);
 	}
 
-	PTY                  = pty;     // programm type (education)
-	TP                   = tp;      // traffic programm
-	TA                   = ta;      // traffic announcement
-	MS                   = ms;      // music/speech switch (1=music)
-	AF1                  = af1;     // alternate frequency 1
+	PTY                  = pty;
+	TP                   = tp;
+	TA                   = ta;
+	MS                   = ms;
+	AF1                  = af1;
 
 	DP                   = 3;
 	extent               = 2;
@@ -76,28 +87,56 @@ encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
 
 	// which groups are set
 	groups[ 0] = 1; // basic tuning and switching
-	groups[ 1] = 1; // Extended Country Code
 	groups[ 2] = 1; // radio text
-	groups[ 3] = 1; // announce TMC
-	groups[ 4] = 1; // clock time
-	groups[ 8] = 1; // tmc
-	groups[11] = 1;
+	groups[11] = 1; // In-house applications
+
+    if (d_enable_ecc) {
+        groups[1] = 1; // Extended Country Code
+    }
+    if (d_ct) {
+        groups[4] = 1; // clock time
+    }
+    if (d_tmc) {
+        groups[3] = 1; // announce TMC
+        groups[8] = 1; // tmc
+    }
 
 	rebuild();
 }
 
 encoder_impl::~encoder_impl() {
-	free(buffer);
+    if (buffer) {
+        for(int i = 0; i < nbuffers; i++) {
+            free(buffer[i]);
+        }
+        free(buffer);
+    }
+    free(d_is_group4a); // Deallocate the tracking array
 }
 
 void encoder_impl::rebuild() {
 	gr::thread::scoped_lock lock(d_mutex);
 
+    if (buffer) {
+        for(int i = 0; i < nbuffers; i++) {
+            free(buffer[i]);
+        }
+        free(buffer);
+        buffer = nullptr;
+    }
+    free(d_is_group4a); // Free the old tracking array
+    d_is_group4a = nullptr;
+
+
 	count_groups();
 	d_current_buffer = 0;
+    d_last_ct_time = 0; // Reset last update time on rebuild
 
 	// allocate memory for nbuffers buffers of 104 unsigned chars each
 	buffer = (unsigned char **)malloc(nbuffers * sizeof(unsigned char *));
+    d_is_group4a = (char *)malloc(nbuffers * sizeof(char));
+    std::memset(d_is_group4a, 0, nbuffers * sizeof(char));
+
 	for(int i = 0; i < nbuffers; i++) {
 		buffer[i] = (unsigned char *)malloc(104 * sizeof(unsigned char));
 		for(int j = 0; j < 104; j++) buffer[i][j] = 0;
@@ -107,7 +146,15 @@ void encoder_impl::rebuild() {
 	// prepare each of the groups
 	for(int i = 0; i < 32; i++) {
 		if(groups[i] == 1) {
-			create_group(i % 16, (i < 16) ? false : true);
+            int group_type = i % 16;
+            bool ab_flag = (i < 16) ? false : true;
+
+            // Mark the buffer if it is for Group 4A before creating it
+            if (group_type == 4) {
+                d_is_group4a[d_current_buffer] = 1;
+            }
+
+			create_group(group_type, ab_flag);
 			if(i % 16 == 0)  // if group is type 0, call 3 more times
 				for(int j = 0; j < 3; j++) create_group(i % 16, (i < 16) ? false : true);
 			if(i % 16 == 2) // if group type is 2, call 15 more times
@@ -379,15 +426,28 @@ void encoder_impl::prepare_group0(const bool AB) {
 	if(d_g0_counter == 3)
 		infoword[1] = infoword[1] | 0x5;  // d0=1 (stereo), d1-3=0
 	infoword[1] = infoword[1] | (d_g0_counter & 0x3);
-	if(!AB) {
-		infoword[2] = (225 << 8) | // 1 AF follows
-			(encode_af(AF1/1000000) & 0xff);
-	} else {
+	if(!AB) { // This is Group 0A
+        if (d_af) {
+            // AF is enabled: transmit the AF code
+            infoword[2] = (225 << 8) | // 1 AF follows
+                (encode_af(AF1/1000000) & 0xff);
+        } else {
+            // AF is disabled: repeat the PI code in this block for robustness
+            infoword[2] = PI;
+        }
+	} else { // This is Group 0B
 		infoword[2] = PI;
 	}
 	infoword[3] = (PS[2 * d_g0_counter] << 8) | PS[2 * d_g0_counter + 1];
 	d_g0_counter++;
 	if(d_g0_counter > 3) d_g0_counter = 0;
+}
+
+void encoder_impl::prepare_group1a(void) {
+	std::cout << "preparing group 1" << std::endl;
+	//infoword[1] = infoword[1] | (1 << 4); // TMC in 8A
+	infoword[2] = (0x80 << 8) | d_ecc;
+	infoword[3] = 0; // time
 }
 
 void encoder_impl::prepare_group2(const bool AB) {
@@ -402,13 +462,6 @@ void encoder_impl::prepare_group2(const bool AB) {
 	}
 	d_g2_counter++;
 	d_g2_counter %= 16;
-}
-
-void encoder_impl::prepare_group1a(void) {
-	std::cout << "preparing group 1" << std::endl;
-	//infoword[1] = infoword[1] | (1 << 4); // TMC in 8A
-	infoword[2] = (0x80 << 8) | 0xE0;
-	infoword[3] = 0; // time
 }
 
 void encoder_impl::prepare_group3a(void) {
@@ -427,11 +480,11 @@ void encoder_impl::prepare_group3a(void) {
 }
 
 /* see page 28 and Annex G, page 81 in the standard */
-/* FIXME this is supposed to be transmitted only once per minute, when
- * the minute changes */
+/* NOTE: The time is now calculated dynamically in work(), this is just the encoder logic. */
 void encoder_impl::prepare_group4a(void) {
 	time_t rightnow;
 	tm *utc;
+    tm *local;
 
 	time(&rightnow);
 	//printf("%s", asctime(localtime(&rightnow)));
@@ -439,12 +492,13 @@ void encoder_impl::prepare_group4a(void) {
 	/* we're supposed to send UTC time; the receiver should then add the
 	* local timezone offset */
 	utc = gmtime(&rightnow);
+    local = localtime(&rightnow);
 	int m = utc->tm_min;
 	int h = utc->tm_hour;
 	int D = utc->tm_mday;
 	int M = utc->tm_mon + 1;  // January: M=0
 	int Y = utc->tm_year;
-	int toffset=localtime(&rightnow)->tm_hour-h;
+	int toffset=local->tm_hour-h;
 
 	int L = ((M == 1) || (M == 2)) ? 1 : 0;
 	int mjd=14956+D+int((Y-L)*365.25)+int((M+1+L*12)*30.6001);
@@ -497,11 +551,47 @@ int encoder_impl::work (int noutput_items,
 	unsigned char *out = (unsigned char *) output_items[0];
 
 	for(int i = 0; i < noutput_items; i++) {
+
+        // At the start of a new group, check if it's a dynamic time group
+        if (d_buffer_bit_counter == 0 && nbuffers > 0 && d_ct && d_is_group4a[d_current_buffer]) {
+            time_t now;
+            time(&now);
+            // Update time only once per minute (at the top of the minute)
+            if ((now / 60) != (d_last_ct_time / 60) || d_last_ct_time == 0) {
+                d_last_ct_time = now;
+                //std::cout << "Updating RDS clock time." << std::endl;
+
+                // Regenerate this specific group's data. Logic copied from create_group().
+                const int group_type = 4;
+                const bool AB = false; // Group 4A is never 'B' version
+
+                // 1. Prepare infowords with current time
+                infoword[0] = PI;
+                infoword[1] = (((group_type & 0xf) << 12) | (AB << 11) | (TP << 10) | (PTY << 5));
+                prepare_group4a(); // This gets the current time and fills infoword[1-3]
+
+                // 2. Calculate checkwords and blocks
+                for(int k = 0; k < 4; k++) {
+                    checkword[k] = calc_syndrome(infoword[k], 16);
+                    block[k] = ((infoword[k] & 0xffff) << 10) | (checkword[k] & 0x3ff);
+                    if((k == 2) && AB) block[k] ^= offset_word[4];
+                    else block[k] ^= offset_word[k];
+                }
+
+                // 3. Populate the buffer for the current group
+                prepare_buffer(d_current_buffer);
+            }
+        }
+
 		out[i] = buffer[d_current_buffer][d_buffer_bit_counter];
 		if(++d_buffer_bit_counter > 103) {
 			d_buffer_bit_counter = 0;
 			d_current_buffer++;
-			d_current_buffer = d_current_buffer % nbuffers;
+            if (nbuffers > 0) { // Protect against division by zero if no buffers are configured
+			    d_current_buffer = d_current_buffer % nbuffers;
+            } else {
+                d_current_buffer = 0;
+            }
 		}
 	}
 
@@ -509,12 +599,12 @@ int encoder_impl::work (int noutput_items,
 }
 
 encoder::sptr encoder::make (unsigned char pty_locale, int pty, bool ms,
-		std::string ps, double af1, bool tp,
-		bool ta, int pi_country_code, int pi_coverage_area,
-		int pi_reference_number, std::string radiotext) {
+		std::string ps, bool af, double af1, bool tp,
+		bool ta, bool tmc, bool ct, int pi_country_code, int pi_coverage_area,
+		int pi_reference_number, std::string radiotext, bool enable_ecc, unsigned char ecc) {
 
 	return gnuradio::get_initial_sptr(
-			new encoder_impl(pty_locale, pty, ms, ps, af1, tp, ta,
-					pi_country_code, pi_coverage_area, pi_reference_number,
-					radiotext));
+			new encoder_impl(pty_locale, pty, ms, ps, af, af1, tp, ta,
+                    tmc, ct, pi_country_code, pi_coverage_area, pi_reference_number,
+					radiotext, enable_ecc, ecc));
 }
