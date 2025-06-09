@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Bastian Bloessl <bloessl@ccs-labs.org>
+ * Copyright (C) 2014, 2016 Bastian Bloessl <bloessl@ccs-labs.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,11 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #ifndef INCLUDED_RDS_ENCODER_IMPL_H
 #define INCLUDED_RDS_ENCODER_IMPL_H
 
 #include <rds/encoder.h>
 #include <gnuradio/thread/thread.h>
+#include <time.h> // For time_t
 
 namespace gr {
 namespace rds {
@@ -26,19 +28,31 @@ namespace rds {
 class encoder_impl : public encoder
 {
 public:
-	encoder_impl(unsigned char pty_locale, int pty, bool ms, std::string ps,
-                 double af1, bool tp, bool ta, int pi_country_code,
-                 int pi_coverage_area, int pi_reference_number,
-                 std::string radiotext);
+	encoder_impl(unsigned char pty_locale,
+                 int pty,
+                 bool ms,
+                 std::string ps,
+                 bool af,
+                 double af1,
+                 bool tp,
+                 bool ta,
+                 bool tmc,
+                 bool ct,
+                 int pi_country_code,
+                 int pi_coverage_area,
+                 int pi_reference_number,
+                 std::string radiotext,
+                 bool enable_ecc,
+                 unsigned char ecc);
 
-    virtual void set_ps(std::string ps);
+    void set_ps(std::string ps) override;
 
 private:
-	~encoder_impl();
+	~encoder_impl() override;
 
 	int work(int noutput_items,
 			gr_vector_const_void_star &input_items,
-			gr_vector_void_star &output_items);
+			gr_vector_void_star &output_items) override;
 
 	unsigned int  infoword[4];
 	unsigned int  checkword[4];
@@ -79,6 +93,17 @@ private:
 /* nbuffers might be != ngroups, e.g. group 0A needs 4 buffers */
 	int nbuffers;
 
+    // Added for dynamic time updates
+    char* d_is_group4a;
+    time_t d_last_ct_time;
+
+    // Added for new features
+    bool d_af;
+    bool d_tmc;
+    bool d_ct;
+    bool d_enable_ecc;
+    unsigned char d_ecc;
+
 // Functions
 	void rebuild();
 	void set_ms(bool ms);
@@ -104,7 +129,7 @@ private:
 	void rds_in(pmt::pmt_t msg);
 };
 
-} /* namespace rds */
-} /* namespace gr */
+}
+}
 
 #endif /* INCLUDED_RDS_ENCODER_IMPL_H */
