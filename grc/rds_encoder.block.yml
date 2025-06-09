@@ -132,7 +132,7 @@ documentation: |-
     TMC: Traffic Message Channel
     CT: Clock-Time
     PI: Program Identification (country code, coverage area, reference number)
-    Radiotext: Radiotext
+    Radiotext: Radiotext (obviously)
     ECC: Extended Country Code
 
 file_format: 1
