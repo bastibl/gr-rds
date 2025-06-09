@@ -39,17 +39,33 @@ parameters:
     label: PS
     dtype: string
     default: WDR 3
+-   id: af
+    label: AF
+    dtype: bool
+    default: 'False'
+    options: ['True', 'False']
 -   id: af1
     label: AF1
     dtype: float
     default: 89.8e6
+    hide: ${ 'all' if not af else 'none' }
 -   id: tp
     label: TP
     dtype: bool
-    default: 'True'
+    default: 'False'
     options: ['True', 'False']
 -   id: ta
     label: TA
+    dtype: bool
+    default: 'False'
+    options: ['True', 'False']
+-   id: tmc
+    label: TMC
+    dtype: bool
+    default: 'False'
+    options: ['True', 'False']
+-   id: ct
+    label: Clock-Time
     dtype: bool
     default: 'False'
     options: ['True', 'False']
@@ -57,8 +73,8 @@ parameters:
     label: PI Country Code
     dtype: int
     default: '13'
-    options: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13',
-        '15']
+    options: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12',
+        '13', '15']
     option_labels: [Other, DE, DZ, AD, IL, IT, BE, RU, PS, AL, AT, HU, MT, DE, EG]
 -   id: pi_coverage_area
     label: PI Coverage Area
@@ -69,7 +85,7 @@ parameters:
     option_labels: [Local, International, National, Supra-regional, Regional 1, Regional
             2, Regional 3, Regional 4, Regional 5, Regional 6, Regional 7, Regional
             8, Regional 9, Regional 10, Regional 11, Regional 12]
-    hide: ${ ('all' if str(pi_country_code) == '0' else 'none') }
+    hide: ${ 'all' if str(pi_country_code) == '0' else 'none' }
 -   id: pi_reference_number
     label: ${ ('PI Code' if str(pi_country_code) == '0' else 'PI Program Reference Number') }
     dtype: int
@@ -78,6 +94,16 @@ parameters:
     label: Radiotext
     dtype: string
     default: GNU Radio <3
+-   id: enable_ecc
+    label: ECC
+    dtype: bool
+    default: 'False'
+    options: ['True', 'False']
+-   id: ecc_value
+    label: ECC Value
+    dtype: int
+    default: '0xE0'
+    hide: ${ 'all' if not enable_ecc else 'none' }
 
 inputs:
 -   domain: message
@@ -90,20 +116,23 @@ outputs:
 
 templates:
     imports: import rds
-    make: "rds.encoder(${pty_locale}, ${pty}, ${ms}, ${ps}, ${af1},\n\t\t\t${tp},\
-        \ ${ta}, ${pi_country_code}, ${pi_coverage_area},\n\t\t\t${pi_reference_number},\
-        \ ${radiotext})\n\t"
+    make: "rds.encoder(${pty_locale}, ${pty}, ${ms}, ${ps}, ${af}, ${af1},\n\t\t\t${tp},\
+        \ ${ta}, ${tmc}, ${ct}, ${pi_country_code}, ${pi_coverage_area},\n\t\t\t${pi_reference_number},\
+        \ ${radiotext}, ${enable_ecc}, ${ ecc_value if enable_ecc else 0 })\n\t"
     callbacks:
     - set_ps(${ps})
 
 documentation: |-
     PTY: Program Type (depending on PTY locale)
-    MS: Speech/Music
+    MS: Music/Speech
     PS: Program Service Name
     AF: Alternate Frequency
     TP: Traffic Program
-    TA: Traffic Announcment
+    TA: Traffic Announcement
+    TMC: Traffic Message Channel
+    CT: Clock-Time
     PI: Program Identification (country code, coverage area, reference number)
-    Radiotext: Radiotext (obviously)
+    Radiotext: Radiotext
+    ECC: Extended Country Code
 
 file_format: 1
