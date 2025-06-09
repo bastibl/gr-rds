@@ -129,7 +129,7 @@ private:
 	void rds_in(pmt::pmt_t msg);
 };
 
-}
-}
+} /* namespace rds */
+} /* namespace gr */
 
 #endif /* INCLUDED_RDS_ENCODER_IMPL_H */
