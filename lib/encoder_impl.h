@@ -20,7 +20,7 @@
 
 #include <rds/encoder.h>
 #include <gnuradio/thread/thread.h>
-#include <time.h> // For time_t
+#include <time.h>
 
 namespace gr {
 namespace rds {
@@ -28,83 +28,20 @@ namespace rds {
 class encoder_impl : public encoder
 {
 public:
-	encoder_impl(unsigned char pty_locale,
-                 int pty,
-                 bool ms,
-                 std::string ps,
-                 bool af,
-                 double af1,
-                 bool tp,
-                 bool ta,
-                 bool tmc,
-                 bool ct,
-                 int pi_country_code,
-                 int pi_coverage_area,
-                 int pi_reference_number,
-                 std::string radiotext,
-                 bool enable_ecc,
-                 unsigned char ecc);
+	encoder_impl(unsigned char pty_locale, int pty, bool ms, std::string ps,
+                 bool af, double af1, bool tp, bool ta, bool tmc, bool ct,
+                 int pi_country_code, int pi_coverage_area, int pi_reference_number,
+                 std::string radiotext, bool ecc, unsigned char ecc_code);
 
     void set_ps(std::string ps) override;
 
 private:
 	~encoder_impl() override;
 
+	// --- Member Functions ---
 	int work(int noutput_items,
 			gr_vector_const_void_star &input_items,
 			gr_vector_void_star &output_items) override;
-
-	unsigned int  infoword[4];
-	unsigned int  checkword[4];
-	unsigned int  block[4];
-	unsigned char **buffer;
-	unsigned char pty_locale;
-
-	// FIXME make this a struct (or a class)
-	unsigned char PTY;
-	unsigned char radiotext[64];
-	unsigned char PS[8];
-	bool TA;
-	bool TP;
-	bool MS;
-	unsigned int PI;
-	double AF1;
-
-	int DP;
-	int extent;
-	int event;
-	int location;
-	gr::thread::mutex d_mutex;
-
-/* each type 0 group contains 2 out of 8 PS characters;
- * this is used to count 0..3 and send all PS characters */
-	int d_g0_counter;
-/* each type 2A group contains 4 out of 64 RadioText characters;
- * each type 2B group contains 2 out of 32 RadioText characters;
- * this is used to count 0..15 and send all RadioText characters */
-	int d_g2_counter;
-	int d_g3_counter;
-/* points to the current buffer being prepared/streamed
- * used in create_group() and in work() */
-	int d_current_buffer;
-/* loops through the buffer, pushing out the symbols */
-	int d_buffer_bit_counter;
-	int groups[32];
-/* nbuffers might be != ngroups, e.g. group 0A needs 4 buffers */
-	int nbuffers;
-
-    // Added for dynamic time updates
-    char* d_is_group4a;
-    time_t d_last_ct_time;
-
-    // Added for new features
-    bool d_af;
-    bool d_tmc;
-    bool d_ct;
-    bool d_enable_ecc;
-    unsigned char d_ecc;
-
-// Functions
 	void rebuild();
 	void set_ms(bool ms);
 	void set_tp(bool tp);
@@ -113,7 +50,6 @@ private:
 	void set_pty(unsigned int pty);
 	void set_pi(unsigned int pty);
 	void set_radiotext(std::string text);
-
 	void count_groups();
 	void create_group(const int, const bool);
 	void prepare_group0(const bool);
@@ -127,6 +63,58 @@ private:
 	unsigned int encode_af(double);
 	unsigned int calc_syndrome(unsigned long, unsigned char);
 	void rds_in(pmt::pmt_t msg);
+
+
+	// --- Member Variables ---
+
+	// RDS Configuration & Data
+	gr::thread::mutex d_mutex;
+	unsigned char   d_pty_locale;
+	unsigned int    d_pi;
+	unsigned char   d_pty;
+	double          d_af1;
+	unsigned char   d_ecc_code;
+
+	// Feature-Enabling Flags
+	bool d_ms;
+	bool d_tp;
+	bool d_ta;
+	bool d_af;
+	bool d_tmc;
+	bool d_ct;
+	bool d_ecc;
+
+	// Data Buffers
+	unsigned char d_radiotext[64];
+	unsigned char d_ps[8];
+
+	// Internal State & Buffers
+	unsigned int  d_infoword[4];
+	unsigned int  d_checkword[4];
+	unsigned int  d_block[4];
+	unsigned char **d_buffer;
+	char*         d_is_group4a;
+	int           d_nbuffers;
+	int           d_groups[32];
+
+	// Message Segment Counters
+	int d_ps_segment_index;
+	int d_radiotext_segment_index;
+	int d_tmc_segment_index;
+
+	// Streaming counters
+	int    d_current_buffer;
+	int    d_buffer_bit_counter;
+	time_t d_last_ct_time;
+
+	// RDS-TMC Alert-C Data
+	struct TmcAlertData {
+		int duration_persistence;
+		int extent;
+		int event_code;
+		int location_code;
+	};
+	TmcAlertData d_tmc_alert_data;
 };
 
 } /* namespace rds */
