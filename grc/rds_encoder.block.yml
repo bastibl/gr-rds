@@ -94,16 +94,16 @@ parameters:
     label: Radiotext
     dtype: string
     default: GNU Radio <3
--   id: enable_ecc
+-   id: ecc
     label: ECC
     dtype: bool
     default: 'False'
     options: ['True', 'False']
--   id: ecc_value
+-   id: ecc_code
     label: ECC Value
     dtype: int
     default: '0xE0'
-    hide: ${ 'all' if not enable_ecc else 'none' }
+    hide: ${ 'all' if not ecc else 'none' }
 
 inputs:
 -   domain: message
@@ -118,7 +118,7 @@ templates:
     imports: import rds
     make: "rds.encoder(${pty_locale}, ${pty}, ${ms}, ${ps}, ${af}, ${af1},\n\t\t\t${tp},\
         \ ${ta}, ${tmc}, ${ct}, ${pi_country_code}, ${pi_coverage_area},\n\t\t\t${pi_reference_number},\
-        \ ${radiotext}, ${enable_ecc}, ${ ecc_value if enable_ecc else 0 })\n\t"
+        \ ${radiotext}, ${ecc}, ${ ecc_code if ecc else 0 })\n\t"
     callbacks:
     - set_ps(${ps})
 
