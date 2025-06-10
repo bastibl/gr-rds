@@ -103,7 +103,7 @@ parameters:
     label: ECC Value
     dtype: int
     default: '0xE0'
-    hide: ${ 'all' if not ecc else 'none' }
+    hide: ${ 'all' if str(pi_country_code) != '0' or not ecc else 'none' }
 
 inputs:
 -   domain: message
