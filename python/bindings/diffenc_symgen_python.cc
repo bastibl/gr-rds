@@ -13,8 +13,8 @@
 /* If manual edits are made, the following tags should be modified accordingly.    */
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
-/* BINDTOOL_HEADER_FILE(encoder.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(baad12f97f57978fc0a3f0b5fec44341)                     */
+/* BINDTOOL_HEADER_FILE(diffenc_symgen.h)                                        */
+/* BINDTOOL_HEADER_FILE_HASH(3761b6a22421270e6250fabee740027c)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -23,32 +23,21 @@
 
 namespace py = pybind11;
 
-#include <rds/encoder.h>
+#include <rds/diffenc_symgen.h>
 // pydoc.h is automatically generated in the build directory
-#include <encoder_pydoc.h>
+#include <diffenc_symgen_pydoc.h>
 
-void bind_encoder(py::module& m)
+void bind_diffenc_symgen(py::module& m)
 {
 
-    using encoder    = gr::rds::encoder;
+    using diffenc_symgen    = gr::rds::diffenc_symgen;
 
 
-    py::class_<encoder, gr::block, gr::basic_block,
-        std::shared_ptr<encoder>>(m, "encoder", D(encoder))
+    py::class_<diffenc_symgen, gr::block, gr::basic_block,
+        std::shared_ptr<diffenc_symgen>>(m, "diffenc_symgen", D(diffenc_symgen))
 
-        .def(py::init(&encoder::make),
-           py::arg("pty_locale"),
-           py::arg("pty"),
-           py::arg("ms"),
-           py::arg("ps"),
-           py::arg("af1"),
-           py::arg("tp"),
-           py::arg("ta"),
-           py::arg("pi_country_code"),
-           py::arg("pi_coverage_area"),
-           py::arg("pi_reference_number"),
-           py::arg("radiotext"),
-           D(encoder,make)
+        .def(py::init(&diffenc_symgen::make),
+           D(diffenc_symgen,make)
         )
         
 

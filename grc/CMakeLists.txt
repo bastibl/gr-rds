@@ -8,6 +8,7 @@
 
 install(FILES
     rds_decoder.block.yml
+    rds_diffenc_symgen.block.yml
     rds_encoder.block.yml
     rds_panel.block.yml
     rds_parser.block.yml DESTINATION share/gnuradio/grc/blocks

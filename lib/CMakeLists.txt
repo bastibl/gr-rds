@@ -13,6 +13,7 @@ include(GrPlatform) #define LIB_SUFFIX
 
 list(APPEND rds_sources
     decoder_impl.cc
+    diffenc_symgen_impl.cc
     encoder_impl.cc
     parser_impl.cc
 )

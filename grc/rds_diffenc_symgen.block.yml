@@ -1,0 +1,19 @@
+id: rds_diffenc_symgen
+label: Diff encoder + symgen
+category: '[RDS]'
+
+inputs:
+- label: in
+  domain: stream
+  dtype: byte
+
+outputs:
+- label: out
+  domain: stream
+  dtype: float
+
+templates:
+  imports: import rds
+  make: rds.diffenc_symgen()
+
+file_format: 1

@@ -16,9 +16,9 @@
 
 
 
- static const char *__doc_gr_rds_encoder = R"doc()doc";
+ static const char *__doc_gr_rds_diffenc_symgen = R"doc()doc";
 
 
- static const char *__doc_gr_rds_encoder_make = R"doc()doc";
+ static const char *__doc_gr_rds_diffenc_symgen_make = R"doc()doc";
 
   

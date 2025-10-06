@@ -24,6 +24,7 @@ namespace py = pybind11;
 void bind_decoder(py::module& m);
 void bind_encoder(py::module& m);
 void bind_parser(py::module& m);
+void bind_diffenc_symgen(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -55,5 +56,6 @@ PYBIND11_MODULE(rds_python, m)
     bind_decoder(m);
     bind_encoder(m);
     bind_parser(m);
+    bind_diffenc_symgen(m);
     // ) END BINDING_FUNCTION_CALLS
 }

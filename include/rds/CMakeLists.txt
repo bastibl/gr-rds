@@ -10,6 +10,7 @@
 install(FILES
     api.h
     decoder.h
+    diffenc_symgen.h
     encoder.h
     parser.h DESTINATION include/rds
 )

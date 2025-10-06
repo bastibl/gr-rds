@@ -30,6 +30,7 @@ include(GrPybind)
 
 list(APPEND rds_python_files
     decoder_python.cc
+    diffenc_symgen_python.cc
     encoder_python.cc
     parser_python.cc
     python_bindings.cc)
