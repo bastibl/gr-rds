@@ -29,7 +29,7 @@ public:
 	encoder_impl(unsigned char pty_locale, int pty, bool ms, std::string ps,
                  double af1, bool tp, bool ta, int pi_country_code,
                  int pi_coverage_area, int pi_reference_number,
-                 std::string radiotext);
+                 std::string radiotext, int max_latency);
 
     virtual void set_ps(std::string ps);
 
@@ -78,6 +78,11 @@ private:
 	int groups[32];
 /* nbuffers might be != ngroups, e.g. group 0A needs 4 buffers */
 	int nbuffers;
+
+	int d_max_latency;
+	int d_tokens;
+	void add_token(pmt::pmt_t tag);
+	tag_t d_tag;
 
 // Functions
 	void rebuild();

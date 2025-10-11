@@ -25,6 +25,7 @@
 #include <math.h>
 #include <ctype.h>
 #include <time.h>
+#include <chrono>
 #include <cstdio>
 
 using namespace gr::rds;
@@ -32,7 +33,7 @@ using namespace gr::rds;
 encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
 		std::string ps, double af1, bool tp,
 		bool ta, int pi_country_code, int pi_coverage_area,
-		int pi_reference_number, std::string radiotext)
+		int pi_reference_number, std::string radiotext, int max_latency)
 	: gr::sync_block ("gr_rds_encoder",
 			gr::io_signature::make (0, 0, 0),
 			gr::io_signature::make (1, 1, sizeof(unsigned char))),
@@ -84,6 +85,13 @@ encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
 	groups[11] = 1;
 
 	rebuild();
+
+	d_max_latency = max_latency;
+	d_tokens = d_max_latency;
+	message_port_register_in(pmt::mp("strobe"));
+	set_msg_handler(pmt::mp("strobe"), [this](pmt::pmt_t msg) { this->add_token(msg); });
+	d_tag.key = pmt::intern("rds_latency_strobe");
+	d_tag.srcid = alias_pmt();
 }
 
 encoder_impl::~encoder_impl() {
@@ -488,6 +496,13 @@ void encoder_impl::prepare_buffer(int which) {
 	//printf("\n");
 }
 
+void encoder_impl::add_token(pmt::pmt_t msg)
+{
+	if(d_max_latency != -1) {
+		d_tokens++;
+	}
+}
+
 //////////////////////// WORK ////////////////////////////////////
 int encoder_impl::work (int noutput_items,
 		gr_vector_const_void_star &input_items,
@@ -495,9 +510,23 @@ int encoder_impl::work (int noutput_items,
 
 	gr::thread::scoped_lock lock(d_mutex);
 	unsigned char *out = (unsigned char *) output_items[0];
+	int items_produced = 0;
 
 	for(int i = 0; i < noutput_items; i++) {
+		if(d_tokens == 0) {
+			break;
+		}
+
 		out[i] = buffer[d_current_buffer][d_buffer_bit_counter];
+		items_produced++;
+
+		if(d_max_latency != -1) {
+			d_tag.offset = nitems_written(0) + i;
+			d_tag.value = pmt::from_long(d_tag.offset);
+			add_item_tag(0, d_tag);
+			d_tokens--;
+		}
+
 		if(++d_buffer_bit_counter > 103) {
 			d_buffer_bit_counter = 0;
 			d_current_buffer++;
@@ -505,16 +534,20 @@ int encoder_impl::work (int noutput_items,
 		}
 	}
 
-	return noutput_items;
+	if(items_produced == 0) {
+		std::this_thread::sleep_for(std::chrono::microseconds(100));
+	}
+
+	return items_produced;
 }
 
 encoder::sptr encoder::make (unsigned char pty_locale, int pty, bool ms,
 		std::string ps, double af1, bool tp,
 		bool ta, int pi_country_code, int pi_coverage_area,
-		int pi_reference_number, std::string radiotext) {
+		int pi_reference_number, std::string radiotext, int max_latency) {
 
 	return gnuradio::get_initial_sptr(
 			new encoder_impl(pty_locale, pty, ms, ps, af1, tp, ta,
 					pi_country_code, pi_coverage_area, pi_reference_number,
-					radiotext));
+					radiotext, max_latency));
 }

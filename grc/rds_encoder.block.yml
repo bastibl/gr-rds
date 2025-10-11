@@ -78,10 +78,17 @@ parameters:
     label: Radiotext
     dtype: string
     default: GNU Radio <3
+-   id: max_latency
+    label: Max. latency (bits)
+    dtype: int
+    default: '-1'
 
 inputs:
 -   domain: message
     id: rds in
+    optional: true
+-   domain: message
+    id: strobe
     optional: true
 
 outputs:
@@ -92,7 +99,7 @@ templates:
     imports: import rds
     make: "rds.encoder(${pty_locale}, ${pty}, ${ms}, ${ps}, ${af1},\n\t\t\t${tp},\
         \ ${ta}, ${pi_country_code}, ${pi_coverage_area},\n\t\t\t${pi_reference_number},\
-        \ ${radiotext})\n\t"
+        \ ${radiotext}, ${max_latency})\n\t"
     callbacks:
     - set_ps(${ps})
 
@@ -105,5 +112,6 @@ documentation: |-
     TA: Traffic Announcment
     PI: Program Identification (country code, coverage area, reference number)
     Radiotext: Radiotext (obviously)
+    Max. latency: Maximum number of bits that will be sent by the RDS Encoder before receiving an acknowledgement message from the downstream "Latency Tag to Message" block; use -1 for unlimited
 
 file_format: 1
