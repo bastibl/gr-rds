@@ -32,6 +32,7 @@ list(APPEND rds_python_files
     decoder_python.cc
     encoder_python.cc
     parser_python.cc
+    tag_to_msg_python.cc
     python_bindings.cc)
 
 GR_PYBIND_MAKE_OOT(rds 

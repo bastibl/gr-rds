@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(encoder.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(baad12f97f57978fc0a3f0b5fec44341)                     */
+/* BINDTOOL_HEADER_FILE_HASH(91d135896fb4aae4135d03c486c18e1a)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -48,6 +48,7 @@ void bind_encoder(py::module& m)
            py::arg("pi_coverage_area"),
            py::arg("pi_reference_number"),
            py::arg("radiotext"),
+           py::arg("max_latency") = -1,
            D(encoder,make)
         )
         

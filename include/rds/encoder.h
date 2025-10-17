@@ -30,7 +30,7 @@ public:
 	static sptr make(unsigned char pty_locale, int pty, bool ms, std::string ps,
                      double af1, bool tp, bool ta,
                      int pi_country_code, int pi_coverage_area,
-                     int pi_reference_number, std::string radiotext);
+                     int pi_reference_number, std::string radiotext, int max_latency = -1);
 
     virtual void set_ps(std::string ps) = 0;
 };

@@ -70,18 +70,6 @@ blocks:
     coordinate: [1008, 84.0]
     rotation: 0
     state: enabled
-- name: outbuffer
-  id: variable
-  parameters:
-    comment: ''
-    value: '10'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1008, 8.0]
-    rotation: 0
-    state: enabled
 - name: pilot_gain
   id: variable
   parameters:
@@ -324,7 +312,7 @@ blocks:
     comment: ''
     dimension: '1'
     in_type: byte
-    maxoutbuf: outbuffer
+    maxoutbuf: '0'
     minoutbuf: '0'
     num_ports: '1'
     out_type: float
@@ -333,7 +321,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [304, 352.0]
+    coordinate: [304, 360.0]
     rotation: 0
     state: true
 - name: gr_add_xx_0
@@ -379,7 +367,7 @@ blocks:
     alias: ''
     coding: digital.DIFF_DIFFERENTIAL
     comment: ''
-    maxoutbuf: outbuffer
+    maxoutbuf: '0'
     minoutbuf: '0'
     modulus: '2'
   states:
@@ -412,13 +400,13 @@ blocks:
     alias: ''
     comment: ''
     map: '[1,2]'
-    maxoutbuf: outbuffer
+    maxoutbuf: '0'
     minoutbuf: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [520, 300.0]
+    coordinate: [520, 304.0]
     rotation: 180
     state: enabled
 - name: gr_multiply_xx_0
@@ -482,13 +470,13 @@ blocks:
     alias: ''
     comment: ''
     k: '2'
-    maxoutbuf: outbuffer
+    maxoutbuf: '0'
     minoutbuf: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [304, 300.0]
+    coordinate: [304, 304.0]
     rotation: 180
     state: enabled
 - name: import_0
@@ -569,7 +557,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [40, 136.0]
+    coordinate: [40, 120.0]
     rotation: 0
     state: enabled
 - name: osmosdr_sink_0
@@ -981,7 +969,8 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    maxoutbuf: outbuffer
+    max_latency: '104'
+    maxoutbuf: '0'
     minoutbuf: '0'
     ms: 'True'
     pi_country_code: '13'
@@ -997,9 +986,27 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [264, 76.0]
+    coordinate: [264, 68.0]
     rotation: 0
     state: true
+- name: rds_tag_to_msg_0
+  id: rds_tag_to_msg
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '1'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [240, 960.0]
+    rotation: 180
+    state: enabled
 - name: root_raised_cosine_filter_0
   id: root_raised_cosine_filter
   parameters:
@@ -1324,6 +1331,7 @@ connections:
 - [gr_add_xx_1, '0', qtgui_freq_sink_x_0, '0']
 - [gr_diff_encoder_bb_0, '0', gr_map_bb_1, '0']
 - [gr_frequency_modulator_fc_0, '0', rational_resampler_xxx_1, '0']
+- [gr_frequency_modulator_fc_0, '0', rds_tag_to_msg_0, '0']
 - [gr_map_bb_1, '0', gr_unpack_k_bits_bb_0, '0']
 - [gr_multiply_xx_0, '0', gr_add_xx_1, '0']
 - [gr_multiply_xx_1, '0', gr_add_xx_1, '2']
@@ -1339,8 +1347,9 @@ connections:
 - [rational_resampler_xxx_1, '0', osmosdr_sink_0, '0']
 - [rational_resampler_xxx_1, '0', uhd_usrp_sink, '0']
 - [rds_encoder_0, '0', gr_diff_encoder_bb_0, '0']
+- [rds_tag_to_msg_0, strobe, rds_encoder_0, strobe]
 - [root_raised_cosine_filter_0, '0', gr_multiply_xx_0, '0']
 
 metadata:
   file_format: 1
-  grc_version: 3.10.11.0
+  grc_version: 3.10.12.0

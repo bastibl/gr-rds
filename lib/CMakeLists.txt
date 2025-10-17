@@ -15,6 +15,7 @@ list(APPEND rds_sources
     decoder_impl.cc
     encoder_impl.cc
     parser_impl.cc
+    tag_to_msg_impl.cc
 )
 
 set(rds_sources "${rds_sources}" PARENT_SCOPE)

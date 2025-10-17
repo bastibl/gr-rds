@@ -11,5 +11,6 @@ install(FILES
     api.h
     decoder.h
     encoder.h
-    parser.h DESTINATION include/rds
+    parser.h
+    tag_to_msg.h DESTINATION include/rds
 )
