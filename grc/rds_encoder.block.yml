@@ -29,6 +29,10 @@ parameters:
             / Spanish Music, National Music / Hip Hop, Oldies Music / Unassigned,
         Folk Music / Unassigned, Documentary / Weather, Alarm Test / Emergency Test,
         Alarm / Emergency]
+-   id: ptyn
+    label: PTYN
+    dtype: string
+    default: PTYN
 -   id: ms
     label: MS
     dtype: bool
@@ -97,20 +101,20 @@ outputs:
 
 templates:
     imports: import rds
-    make: "rds.encoder(${pty_locale}, ${pty}, ${ms}, ${ps}, ${af1},\n\t\t\t${tp},\
+    make: "rds.encoder(${pty_locale}, ${pty}, ${ptyn}, ${ms}, ${ps}, ${af1},\n\t\t\t${tp},\
         \ ${ta}, ${pi_country_code}, ${pi_coverage_area},\n\t\t\t${pi_reference_number},\
         \ ${radiotext}, ${max_latency})\n\t"
     callbacks:
     - set_ps(${ps})
 
 documentation: |-
-    PTY: Program Type (depending on PTY locale)
-    MS: Speech/Music
-    PS: Program Service Name
-    AF: Alternate Frequency
-    TP: Traffic Program
+    PTY: Programme Type (depending on PTY locale)
+    MS: Music/Speech
+    PS: Programme Service Name
+    AF: Alternative Frequency
+    TP: Traffic Programme
     TA: Traffic Announcment
-    PI: Program Identification (country code, coverage area, reference number)
+    PI: Programme Identification (country code, coverage area, reference number)
     Radiotext: Radiotext (obviously)
     Max. latency: Maximum number of bits that will be sent by the RDS Encoder before receiving an acknowledgement message from the downstream "Latency Tag to Message" block; use -1 for unlimited
 

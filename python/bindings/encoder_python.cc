@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(encoder.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(91d135896fb4aae4135d03c486c18e1a)                     */
+/* BINDTOOL_HEADER_FILE_HASH(cce15a0e3dc5b75a9071e882458645d1)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -39,6 +39,7 @@ void bind_encoder(py::module& m)
         .def(py::init(&encoder::make),
            py::arg("pty_locale"),
            py::arg("pty"),
+           py::arg("ptyn"),
            py::arg("ms"),
            py::arg("ps"),
            py::arg("af1"),

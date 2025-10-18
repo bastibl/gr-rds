@@ -30,7 +30,7 @@
 
 using namespace gr::rds;
 
-encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
+encoder_impl::encoder_impl (unsigned char pty_locale, int pty, std::string ptyn, bool ms,
 		std::string ps, double af1, bool tp,
 		bool ta, int pi_country_code, int pi_coverage_area,
 		int pi_reference_number, std::string radiotext, int max_latency)
@@ -50,6 +50,7 @@ encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
 	d_g0_counter         = 0;
 	d_g2_counter         = 0;
 	d_g3_counter         = 0;
+	d_g10_counter        = 0;
 	d_current_buffer     = 0;
 	d_buffer_bit_counter = 0;
 
@@ -73,15 +74,17 @@ encoder_impl::encoder_impl (unsigned char pty_locale, int pty, bool ms,
 	location             = 11023;
 
 	set_radiotext(std::string(radiotext));
+	set_ptyn(std::string(ptyn));
 	set_ps(ps);
 
 	// which groups are set
-	groups[ 0] = 1; // basic tuning and switching
-	groups[ 1] = 1; // Extended Country Code
-	groups[ 2] = 1; // radio text
-	groups[ 3] = 1; // announce TMC
-	groups[ 4] = 1; // clock time
-	groups[ 8] = 1; // tmc
+	groups[ 0] = 1; // PS, PTY, M/S, TP, TA, AF
+	groups[ 1] = 1; // ECC
+	groups[ 2] = 1; // RT
+	groups[ 3] = 1; // ODA AID for TMC
+	groups[ 4] = 1; // CT
+	groups[ 8] = 1; // TMC
+	groups[10] = 1; // PTYN
 	groups[11] = 1;
 
 	rebuild();
@@ -121,6 +124,8 @@ void encoder_impl::rebuild() {
 			if(i % 16 == 2) // if group type is 2, call 15 more times
 				for(int j = 0; j < 15; j++) create_group(i % 16, (i < 16) ? false : true);
 			if(i % 16 == 3)  // if group is type 3, call 1 more times
+				create_group(i % 16, (i < 16) ? false : true);
+			if(i % 16 == 10)  // if group is type 10, call 1 more times
 				create_group(i % 16, (i < 16) ? false : true);
 		}
 	}
@@ -163,34 +168,41 @@ void encoder_impl::rds_in(pmt::pmt_t msg) {
 		cout << "print state" << endl;
 		//print_state();
 
-	// pty
+	// PTY
 	} else if(phrase_parse(in.begin(), in.end(),
 			"pty" >> (("0x" >> hex) | uint_), space, ui1)) {
 		cout << "set pty: " << ui1 << endl;
 		set_pty(ui1);
+		
+	// PTYN
+	} else if(phrase_parse(in.begin(), in.end(),
+			"ptyn" >> lexeme[+(char_ - '\n')] >> -lit("\n"),
+			space, s1)) {
+		cout << "ptyn: " << s1 << endl;
+		set_ptyn(s1);
 
-	// radio text
+	// RT
 	} else if(phrase_parse(in.begin(), in.end(),
 			"text" >> lexeme[+(char_ - '\n')] >> -lit("\n"),
 			space, s1)) {
 		cout << "text: " << s1 << endl;
 		set_radiotext(s1);
 
-	// ps
+	// PS
 	} else if(phrase_parse(in.begin(), in.end(),
 			"ps" >> lexeme[+(char_ - '\n')] >> -lit("\n"),
 			space, s1)) {
 		cout << "ps: " << s1 << endl;
 		set_ps(s1);
 
-	// ta
+	// TA
 	} else if(phrase_parse(in.begin(), in.end(),
 			"ta" >> bool_,
 			space, b1)) {
 		cout << "ta: " << b1 << endl;
 		set_ta(b1);
 
-	// tp
+	// TP
 	} else if(phrase_parse(in.begin(), in.end(),
 			"tp" >> bool_,
 			space, b1)) {
@@ -247,7 +259,7 @@ void encoder_impl::set_ta(bool ta) {
 	TA = ta;
 }
 
-// program type
+// Programme Type
 void encoder_impl::set_pty(unsigned int pty) {
 	if(pty > 31) {
 		std::cout << "warning: ignoring invalid pty: " << std::endl;
@@ -257,7 +269,15 @@ void encoder_impl::set_pty(unsigned int pty) {
 	}
 }
 
-// program identification
+// Programme Type Name
+void encoder_impl::set_ptyn(std::string ptyn) {
+		size_t len = std::min(sizeof(PTYN), ptyn.length());
+
+		std::memset(PTYN, ' ', sizeof(PTYN));
+		std::memcpy(PTYN, ptyn.c_str(), len);
+}
+
+// Programme Identification
 void encoder_impl::set_pi(unsigned int pi) {
 	if(pi > 0xFFFF) {
 		std::cout << "warning: ignoring invalid pi: " << std::endl;
@@ -273,7 +293,7 @@ void encoder_impl::set_pi(unsigned int pi) {
 	}
 }
 
-// radiotext
+// RadioText
 void encoder_impl::set_radiotext(std::string text) {
 		size_t len = std::min(sizeof(radiotext), text.length());
 
@@ -281,7 +301,7 @@ void encoder_impl::set_radiotext(std::string text) {
 		std::memcpy(radiotext, text.c_str(), len);
 }
 
-// program service name
+// Programme Service Name
 void encoder_impl::set_ps(std::string ps) {
 		size_t len = std::min(sizeof(PS), ps.length());
 
@@ -343,6 +363,8 @@ void encoder_impl::count_groups(void) {
 				nbuffers += 16;
 			else if(i % 16 == 3)
 				nbuffers += 2;
+			else if(i % 16 == 10)
+				nbuffers += 2;
 			else
 				nbuffers++;
 		}
@@ -363,6 +385,7 @@ void encoder_impl::create_group(const int group_type, const bool AB) {
 	else if(group_type == 3) prepare_group3a();
 	else if(group_type == 4) prepare_group4a();
 	else if(group_type == 8) prepare_group8a();
+	else if(group_type == 10) prepare_group10a();
 	else if(group_type == 11) prepare_group11a();
 	else printf("preparation of group %i not yet supported\n", group_type);
 	//printf("data: %04X %04X %04X %04X, ", infoword[0], infoword[1], infoword[2], infoword[3]);
@@ -470,6 +493,20 @@ void encoder_impl::prepare_group8a(void) {
 	infoword[3] = location;
 }
 
+// PTYN
+void encoder_impl::prepare_group10a() {
+	infoword[1] = (infoword[1] & 0xFFF0) | d_g10_counter;
+	if(d_g10_counter == 0) {
+		infoword[2] = (PTYN[0] << 8) | PTYN[1];
+		infoword[3] = (PTYN[2] << 8) | PTYN[3];
+		d_g10_counter++;
+	} else {
+		infoword[2] = (PTYN[4] << 8) | PTYN[5];
+		infoword[3] = (PTYN[6] << 8) | PTYN[7];
+		d_g10_counter--;
+	}
+}
+
 // for now single-group only
 void encoder_impl::prepare_group11a(void) {
 	std::cout << "preparing group 11" << std::endl;
@@ -541,13 +578,13 @@ int encoder_impl::work (int noutput_items,
 	return items_produced;
 }
 
-encoder::sptr encoder::make (unsigned char pty_locale, int pty, bool ms,
+encoder::sptr encoder::make (unsigned char pty_locale, int pty, std::string ptyn, bool ms,
 		std::string ps, double af1, bool tp,
 		bool ta, int pi_country_code, int pi_coverage_area,
 		int pi_reference_number, std::string radiotext, int max_latency) {
 
 	return gnuradio::get_initial_sptr(
-			new encoder_impl(pty_locale, pty, ms, ps, af1, tp, ta,
+			new encoder_impl(pty_locale, pty, ptyn, ms, ps, af1, tp, ta,
 					pi_country_code, pi_coverage_area, pi_reference_number,
 					radiotext, max_latency));
 }
