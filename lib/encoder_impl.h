@@ -26,7 +26,7 @@ namespace rds {
 class encoder_impl : public encoder
 {
 public:
-	encoder_impl(unsigned char pty_locale, int pty, bool ms, std::string ps,
+	encoder_impl(unsigned char pty_locale, int pty, std::string ptyn, bool ms, std::string ps,
                  double af1, bool tp, bool ta, int pi_country_code,
                  int pi_coverage_area, int pi_reference_number,
                  std::string radiotext, int max_latency);
@@ -48,6 +48,7 @@ private:
 
 	// FIXME make this a struct (or a class)
 	unsigned char PTY;
+	unsigned char PTYN[8];
 	unsigned char radiotext[64];
 	unsigned char PS[8];
 	bool TA;
@@ -70,6 +71,7 @@ private:
  * this is used to count 0..15 and send all RadioText characters */
 	int d_g2_counter;
 	int d_g3_counter;
+	int d_g10_counter;
 /* points to the current buffer being prepared/streamed
  * used in create_group() and in work() */
 	int d_current_buffer;
@@ -91,6 +93,7 @@ private:
 	void set_ta(bool ta);
 	void set_af1(double af1);
 	void set_pty(unsigned int pty);
+	void set_ptyn(std::string ptyn);
 	void set_pi(unsigned int pty);
 	void set_radiotext(std::string text);
 
@@ -102,6 +105,7 @@ private:
 	void prepare_group3a();
 	void prepare_group4a();
 	void prepare_group8a();
+	void prepare_group10a();
 	void prepare_group11a();
 	void prepare_buffer(int);
 	unsigned int encode_af(double);
