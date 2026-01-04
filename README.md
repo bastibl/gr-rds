@@ -11,6 +11,7 @@ branches. This means: the *maint-3.7* branch is compatible with GNU Radio 3.7,
 - GNU Radio. See the [GNU Radio
   Wiki](https://wiki.gnuradio.org/index.php/InstallingGR) for
   installation instructions.
+- Boost libraries: Locale, Spirit. Install the `libboost-all-dev` package on Debian-based distributions.
 
 
 ### Installation
